@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+{% macro title() -%}
+  {{ mib.find("./module").get("name") }}
+{%- endmacro %}
+{% macro draw_row(n,tag="td") -%}
+<{{tag}}>(indent)</{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid") }}</{{tag}}>
+{%- set desc = n.find("description") -%}
+{% if desc is not none -%}
+<{{tag}} class="mib_desc">{{ desc.text }}</{{tag}}>
+{%- endif %}
+{%- endmacro %}
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssreset/cssreset-min.css">
+<!-- <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssgrids-responsive/cssgrids-responsive-min.css"> -->
+<link rel="stylesheet" type="text/css" href="mibstyle.css">
+<head>
+<title>{{ title() }}</title>
+</head>
+<body>
+<h1>MIB: {{ title() }} </h1>
+<pre>
+{{ mib.find("./module/description").text}}
+</pre>
+<table id="nodes" class="main">
+    <thead>
+        <th></th>
+        <th>Name</th>
+        <th>oid</th>
+        <th>description</th>
+        <th>syntax</th>
+    </thead>
+    <tbody>
+    {%- for node in mib.findall("./nodes/*") %}
+        {%- if node.tag != 'table' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node) }}</tr>
+        {% else %}
+        <tr class="{{ node.tag }}">{{ draw_row(node) }}</tr>
+        {%- set row = node.find("row") -%}
+        <tr class="row">{{ draw_row(row) }}</tr>
+        {%- for col in row.findall("column") -%}
+        <tr class="column">{{ draw_row(col) }}</tr>
+        {%- endfor -%}
+<!-- <dl class="table_index"><dt>INDEX</dt><dd>{% for idx in row.findall("tdnkage/index") %}{{ idx.get("name") }}, {% endfor -%}</dd></dl> -->
+        {%- endif -%}
+    {%- endfor %}
+</tbody>
+</table>
+</body>
+</html>

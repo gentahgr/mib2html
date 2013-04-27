@@ -1,0 +1,65 @@
+/* css for MIB formatter */
+
+
+/* color scheme: http://colorschemedesigner.com/#3S11Tw0w0w0w0 */
+
+
+h1 {
+    font-size: 120%;
+}
+
+a {
+    color: #1531ae;
+}
+
+/* clearfix */
+.clearfix:after{
+  content: "."; 
+  display: block; 
+  height: 0; 
+  font-size:0;	
+  clear: both; 
+  visibility:hidden;
+}
+	
+.clearfix {display: inline-block;} 
+
+/* Hides from IE Mac \*/
+* html .clearfix {height: 1%;}
+.clearfix {display:block;}
+/* End Hack */ 
+
+/* end of clearfix */
+.main {
+    table-layout: fixed;
+}
+.main th {
+    background-color: #1531AE;
+    color: white;
+}
+.main tr {
+    border: 1px solid gray;
+}
+.main td {
+    vertical-align: top
+}
+
+.node,.scalar,.row,.column {
+    /* border: 1px solid black; */
+}
+
+.node {
+}
+
+.scalar {
+    /* background-color: #ffddcc; */
+}
+
+.table {
+}
+
+.row {
+}
+
+.column {
+}
