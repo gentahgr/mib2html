@@ -1,29 +1,35 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-{% macro title() -%}
-  {{ mib.find("./module").get("name") }}
-{%- endmacro %}
-{% macro draw_row(n,tag="td") -%}
-<{{tag}}>(indent)</{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid") }}</{{tag}}>
-{%- set desc = n.find("description") -%}
-{% if desc is not none -%}
-<{{tag}} class="mib_desc">{{ desc.text }}</{{tag}}>
+{% set module_name = mib.find("./module").get("name") %}
+{% macro decode_TagStr(tstr) -%}
+{%- if tstr is not iterable -%}
+{%- set tstr = [tstr] -%}
+{% for s in tstr -%}
+{{ s }}
+{%- endfor %}
 {%- endif %}
+{% endmacro %}
+{% macro draw_row(n,tag="td") -%}
+<{{tag}} class="mib_indent" style="padding-left: {{n.get("oid")|calc_indent - 1}}em">|</{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}</{{tag}}>
+{%- set desc = n.find("description") %}
+<{{tag}} class="mib_desc">{{ desc.text }}</{{tag}}>
+<{{tag}}>{{ n|format_syntax }}</{{tag}}>
 {%- endmacro %}
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssreset/cssreset-min.css">
 <!-- <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssgrids-responsive/cssgrids-responsive-min.css"> -->
 <link rel="stylesheet" type="text/css" href="mibstyle.css">
 <head>
-<title>{{ title() }}</title>
+<title>{{ module_name }}</title>
 </head>
 <body>
-<h1>MIB: {{ title() }} </h1>
+<h1>MIB: {{ module_name }} </h1>
 <pre>
 {{ mib.find("./module/description").text}}
 </pre>
+<p>identity oid: {{root}}</p>
 <table id="nodes" class="main">
     <thead>
-        <th></th>
+        <th style="width: 6em"></th>
         <th>Name</th>
         <th>oid</th>
         <th>description</th>

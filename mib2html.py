@@ -100,7 +100,7 @@ def build_index(dom):
     return result
 
 
-def find_root_oid(dom,index):
+def find_root(dom,index):
     """find base oid
     return root node oid
 
@@ -120,20 +120,87 @@ def find_root_oid(dom,index):
     if identityName not in index:
         raise InvalidMibError("identity[@node]")
 
-    (rootOid,root) = index[identityName]
-    return rootOid
+    return index[identityName]
 
 # prepare template
 
 # jinja filter functions
-def format_syntax(node):
-    """create string expression of syntax (mib data type)
-    input:
-        node: an Element which as "syntax" child element
-    return:
-        unicode_string
-    """
-    pass
+class TagString(object):
+    def __init__(self, string, tag_type=None, param=None):
+        self.string = string
+        self.tag_type = tag_type
+        self.param = param
+
+    def __unicode__(self):
+        return self.string
+
+    def __repr__(self):
+        return "TagString: {}/{}/{}".format(self.string,self.tag_type,self.param)
+
+def generate_format_syntax(root_name):
+
+
+    def is_local(mod_name):
+        return mod_name == root_name
+
+    def format_syntax(node):
+        """create string expression of syntax (mib data type)
+        input:
+
+         node: an Element which as "syntax" child element
+        return:
+            list of TagString
+        """
+        syntag = node.find("syntax")
+        if syntag is None:
+            # ignore gracefully
+            return ''
+
+        result = []
+        typetag = syntag[0]
+        if typetag.tag == "type":
+            # type
+            mod_name = typetag.get("module")
+            name = typetag.get("name")
+            if is_local(mod_name):
+                result.append( TagString(name,"typedef",mod_name))
+            else:
+                result.append( TagString(name,"import",mod_name))
+        elif typetag.tag == "typedef":
+            basetype = typetag.get("basetype")
+            if basetype == "Enumeration":
+                result.append( TagString( u"/ ".join(
+                    [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
+                    )))
+
+            elif basetype == "Bits":
+                result.append( TagString( u"| ".join(
+                    [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
+                    )))
+            else:
+                parent = typetag.find("parent")
+                if parent is None:
+                    result.append(TagString(basetype))
+                else:
+                    basetype = parent.get("name")
+                    mod_name = parent.get("module")
+                    if is_local(mod_name):
+                       result.append(TagString(basetype,"typedef",mod_name))
+                    else:
+                       result.append(TagString(basetype,"import",mod_name))
+                ranges = typetag.findall("range")
+                if ranges:
+                    result.append( TagString( u" (" ))
+                    result.append( TagString( u", ".join(
+                        [ "{} .. {}".format(r.get("min"),r.get("max")) for r in ranges ]
+                    )))
+                    result.append( TagString( u")" ))
+        else:
+            raise InvalidMibError("syntax for {} has no type or typedef node".format(node.get("name")))
+
+        return u"".join(r.string for r in result)
+        # return result
+    return format_syntax
 
 def generate_calc_oid_indent(rootOid):
     """generator for indent level calculation
@@ -142,6 +209,7 @@ def generate_calc_oid_indent(rootOid):
     return:
         a function for oid calculation
     """
+    oid_prefix_level = rootOid.count(u".") + 1 - 1
 
     def calc_oid_indent(oid_str):
         """calculate indent depth
@@ -150,9 +218,33 @@ def generate_calc_oid_indent(rootOid):
         return:
             indent level
         """
-        return 1
+        return oid_str.count(u".") + 1 - oid_prefix_level
 
     return calc_oid_indent
+
+def generate_short_oid(rootOid):
+    """generator for short oid expression
+
+    example:
+       root: 1.3.6.9.9
+       1.3.6.9.9.1.2.3.4 -> ..(9).1.2.3.4
+
+    input:
+        rootOid: oid for root node (string)
+    return:
+        a function to shorten oid
+    """
+    root_oidlist = rootOid.split(u".")[:-1]
+    root_oid_prefix = u".".join(root_oidlist) + "."
+    oid_prefix_len = len(root_oidlist)
+
+    def short_oid(oid_str):
+        "shorten oid string"
+        if oid_str.startswith(root_oid_prefix):
+            oid_list = oid_str.split(u".")[oid_prefix_len:]
+            return u"..({}).".format(oid_list[0]) + u".".join(oid_list[1:])
+
+    return short_oid
 
 def format_description(desc_str):
     """Format description in SMIv2 MIB file for HTML output
@@ -181,11 +273,12 @@ if __name__ == '__main__':
         try:
             # prepare
             mib_index = build_index(mib)
-            root_oid = find_root_oid(mib,mib_index)
+            root_oid, root_name = find_root(mib,mib_index)
 
             template_env = jinja2.Environment(autoescape=True,loader=jinja2.FileSystemLoader("."))
-            template_env.filters["format_syntax"] = format_syntax
+            template_env.filters["format_syntax"] = generate_format_syntax(root_name)
             template_env.filters["calc_indent"] = generate_calc_oid_indent(root_oid)
+            template_env.filters["short_oid"] = generate_short_oid(root_oid)
             template_env.filters["format_desc"] = format_description
 
             template = template_env.get_template("template.html")

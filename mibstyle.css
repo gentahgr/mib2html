@@ -1,6 +1,5 @@
 /* css for MIB formatter */
 
-
 /* color scheme: http://colorschemedesigner.com/#3S11Tw0w0w0w0 */
 
 
@@ -42,6 +41,11 @@ a {
 }
 .main td {
     vertical-align: top
+}
+
+.mib_indent {
+    border-left: 1px solid #4573D5;
+    height: 100%;
 }
 
 .node,.scalar,.row,.column {
