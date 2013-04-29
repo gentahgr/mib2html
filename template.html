@@ -21,7 +21,7 @@
 {%- endfor -%}
 </{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}{{ oid_suffix }}</{{tag}}>
 {%- set desc = n.find("description") %}
-<{{tag}} class="mib_desc">{{ desc.text }}</{{tag}}>
+<{{tag}} class="mib_desc">{{ desc.text|truncate(120) }}</{{tag}}>
 <{{tag}}>{{ n|format_syntax }}</{{tag}}>
 {%- endmacro %}
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssnormalize/cssnormalize-min.css">
