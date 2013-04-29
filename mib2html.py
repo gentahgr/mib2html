@@ -289,6 +289,25 @@ def generate_short_oid(rootOid):
 
     return short_oid
 
+def create_oid_suffix_str(num):
+    """
+    """
+    basestr = u'.' + u'.'.join(chr(n) for n in xrange( ord('a'), ord('z')+1 )) + u'.*'
+    if num > 27:
+        num = 27
+    return basestr[:num * 2]
+
+       
+def linkage_suffix(row):
+    """create oid suffix suitable for linkage
+    """
+    augment = row.find("linkage/augments")
+    if augment is not None:
+        return ".*"
+    linkages = row.findall("linkage/index")
+    # print >>sys.stderr, "Linkages: {}, {}".format(row.get("name"),len(linkages))
+    return create_oid_suffix_str(len(linkages))
+
 def format_description(desc_str):
     """Format description in SMIv2 MIB file for HTML output
     input:
@@ -323,6 +342,7 @@ if __name__ == '__main__':
             template_env.filters["calc_indent"] = generate_calc_oid_indent(mib, root_oid)
             template_env.filters["short_oid"] = generate_short_oid(root_oid)
             template_env.filters["format_desc"] = format_description
+            template_env.filters["linkage_suffix"] = linkage_suffix
 
             template = template_env.get_template("template.html")
             print template.render(mib=mib,index=mib_index,root=root_oid)

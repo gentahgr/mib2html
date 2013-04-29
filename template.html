@@ -10,7 +10,7 @@
 {{ s }}
 {%- endfor %}
 {% endmacro %}
-{% macro draw_row(n,tag="td") -%}
+{% macro draw_row(n,tag="td",oid_suffix="") -%}
 <{{tag}} class="mib_indent">
 {%- for i in n.get("oid")|calc_indent -%}
 <span class="tree_pattern{{i}}">
@@ -19,7 +19,7 @@
 {%- endif -%}
 </span>
 {%- endfor -%}
-</{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}</{{tag}}>
+</{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}{{ oid_suffix }}</{{tag}}>
 {%- set desc = n.find("description") %}
 <{{tag}} class="mib_desc">{{ desc.text }}</{{tag}}>
 <{{tag}}>{{ n|format_syntax }}</{{tag}}>
@@ -58,8 +58,9 @@
         <tr class="{{ node.tag }}">{{ draw_row(node) }}</tr>
         {%- set row = node.find("row") -%}
         <tr class="row">{{ draw_row(row) }}</tr>
+        {%- set suffix = row|linkage_suffix -%}
         {%- for col in row.findall("column") -%}
-        <tr class="column">{{ draw_row(col) }}</tr>
+        <tr class="column {{"column_first" if loop.first}} {{"column_last" if loop.last}}">{{ draw_row(col,oid_suffix=suffix) }}</tr>
         {%- endfor -%}
 <!-- <dl class="table_index"><dt>INDEX</dt><dd>{% for idx in row.findall("tdnkage/index") %}{{ idx.get("name") }}, {% endfor -%}</dd></dl> -->
         {%- endif -%}

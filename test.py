@@ -23,4 +23,9 @@ def test():
     for (t,v) in sorted(tree.iteritems()):
         print "{}\t{}".format(t,v)
 
-test()
+def test2():
+    print "create_oid_suffix_str"
+    for f in [0,1,2,3,26,29]:
+        print mh.create_oid_suffix_str(f)
+
+test2()

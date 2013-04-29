@@ -119,5 +119,15 @@ a {
 .row {
 }
 
-.column {
+tr.column {
+    border-left: 3px solid black;
+    border-right: 3px solid black;
+}
+
+tr.column_first {
+    border-top: 3px solid black;
+}
+
+tr.column_last {
+    border-bottom: 3px solid black;
 }
