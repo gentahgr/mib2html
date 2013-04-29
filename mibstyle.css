@@ -90,7 +90,7 @@ a {
 .tree_pattern3 {
     width: 10px;
     display: inline-block;
-    height: 1em;
+    height: 0.5em;
     border-left: 2px solid #4573D5;
     vertical-align: top;
 }
@@ -100,6 +100,7 @@ a {
     border-bottom: 2px solid #4573D5;
     height: 6px;
     display: inline-block;
+    vertical-align: top;
 }
 
 .node,.scalar,.row,.column {
