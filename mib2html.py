@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
 convert MIB to HTML
 ===================
@@ -47,6 +48,7 @@ mib structure
 """
 
 from xml.etree import ElementTree as et
+import sys
 
 # Common exception
 
@@ -83,6 +85,11 @@ def oidlen(oid_str):
 
 def build_index(dom):
     """parse index table for all elements having oid attribute
+
+    1. build cross reference for oid and node name
+    2. build supplemental info for tree structure
+       
+
     input:
         dom: ElementTree
     return:
@@ -98,6 +105,26 @@ def build_index(dom):
         result[name] = (oid,node)
 
     return result
+
+def build_tree_index(dom,root):
+    """build index for tree drawing
+    input:
+        dom: (ElementTree)
+        root: root oid to calculate base level (string)
+    result:
+        (rootlevel,treeindex) : (integer, dict)
+        treeindex: (tuple) -> (integer)
+    """
+    rootlevel = oidlen(root) - 1
+    ttree = {}
+    for node in dom.iterfind(".//*[@oid]"):
+        oid = node.get("oid")
+        toid = oid_str2tuple(oid)
+        curlevel = len( toid )
+        for lvl in xrange(rootlevel, curlevel):
+            ttree[ toid[rootlevel-1:lvl] ] = toid[lvl]
+            # print "{}.{} [{}:{}]/ {} = {}".format( toid, curlevel, rootlevel - 1, lvl, toid[rootlevel-1:lvl], toid[lvl])
+    return (rootlevel, ttree)
 
 
 def find_root(dom,index):
@@ -202,24 +229,40 @@ def generate_format_syntax(root_name):
         # return result
     return format_syntax
 
-def generate_calc_oid_indent(rootOid):
+def generate_calc_oid_indent(dom, rootOid):
     """generator for indent level calculation
     input:
         rootOid: oid for root node (string)
     return:
         a function for oid calculation
     """
-    oid_prefix_level = rootOid.count(u".") + 1 - 1
+    # oid_prefix_level = oidlen(rootOid) - 1
+    oid_prefix_level, ttree = build_tree_index(dom, rootOid)
 
     def calc_oid_indent(oid_str):
-        """calculate indent depth
+        """calculate in dent depth and tree structure info
         input:
             oid_str: oid string
         return:
-            indent level
+            a list of flags
+            example:
+              [0,1,1,0,2]
+                0: vertical line through the cell
+                1: no line
+                2: vertical line through the cell (with horizontal line)
+                3: vertical line to the cell (with horizontal line)
         """
-        return oid_str.count(u".") + 1 - oid_prefix_level
-
+        oid = oid_str2tuple(oid_str)
+        cur_level= len(oid)
+        result = []
+        for depth in xrange(oid_prefix_level, cur_level):
+            val = oid[depth]
+            pattern = 0 if ttree[ oid[oid_prefix_level-1:depth] ] > val else 1
+            pattern += 0 if depth + 1 < cur_level else 2
+            result.append( pattern )
+            # print >>sys.stderr, "d={}, ttree{} = {}, v = {} -> {}".format(
+            #        depth, oid[oid_prefix_level-1:depth], ttree[ oid[oid_prefix_level-1:depth] ], val, pattern )
+        return result
     return calc_oid_indent
 
 def generate_short_oid(rootOid):
@@ -273,11 +316,11 @@ if __name__ == '__main__':
         try:
             # prepare
             mib_index = build_index(mib)
-            root_oid, root_name = find_root(mib,mib_index)
+            root_oid, root_node = find_root(mib,mib_index)
 
             template_env = jinja2.Environment(autoescape=True,loader=jinja2.FileSystemLoader("."))
-            template_env.filters["format_syntax"] = generate_format_syntax(root_name)
-            template_env.filters["calc_indent"] = generate_calc_oid_indent(root_oid)
+            template_env.filters["format_syntax"] = generate_format_syntax(root_node)
+            template_env.filters["calc_indent"] = generate_calc_oid_indent(mib, root_oid)
             template_env.filters["short_oid"] = generate_short_oid(root_oid)
             template_env.filters["format_desc"] = format_description
 

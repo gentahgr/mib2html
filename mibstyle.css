@@ -29,8 +29,23 @@ a {
 /* End Hack */ 
 
 /* end of clearfix */
+
+#layout {
+    padding-left: 300px;
+}
+
+#nav {
+    padding-left: -300px;
+}
+
+#main-content {
+}
+
+
 .main {
     table-layout: fixed;
+    font-size: 85%;
+    height: 100%;
 }
 .main th {
     background-color: #1531AE;
@@ -40,12 +55,51 @@ a {
     border: 1px solid gray;
 }
 .main td {
-    vertical-align: top
+    vertical-align: top;
+    height: 100%;
+}
+.mib_desc {
+    font-size: 85%;
 }
 
 .mib_indent {
-    border-left: 1px solid #4573D5;
+    width: 6em;
+}
+
+.tree_pattern0 {
+    width: 10px;
+    border-left: 2px solid #4573D5;
+    display: inline-block;
     height: 100%;
+}
+
+.tree_pattern1 {
+    width: 10px;
+    display: inline-block;
+    height: 100%;
+}
+
+.tree_pattern2 {
+    width: 10px;
+    display: inline-block;
+    height: 100%;
+    border-left: 2px solid #4573D5;
+    vertical-align: top;
+}
+
+.tree_pattern3 {
+    width: 10px;
+    display: inline-block;
+    height: 1em;
+    border-left: 2px solid #4573D5;
+    vertical-align: top;
+}
+
+.tree_hline {
+    width: 10px;
+    border-bottom: 2px solid #4573D5;
+    height: 6px;
+    display: inline-block;
 }
 
 .node,.scalar,.row,.column {

@@ -1,35 +1,50 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
 {% set module_name = mib.find("./module").get("name") %}
 {% macro decode_TagStr(tstr) -%}
 {%- if tstr is not iterable -%}
 {%- set tstr = [tstr] -%}
+{%- endif %}
 {% for s in tstr -%}
 {{ s }}
 {%- endfor %}
-{%- endif %}
 {% endmacro %}
 {% macro draw_row(n,tag="td") -%}
-<{{tag}} class="mib_indent" style="padding-left: {{n.get("oid")|calc_indent - 1}}em">|</{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}</{{tag}}>
+<{{tag}} class="mib_indent">
+{%- for i in n.get("oid")|calc_indent -%}
+<span class="tree_pattern{{i}}">
+{%- if i >= 2 -%}
+<span class="tree_hline"> </span>
+{%- endif -%}
+</span>
+{%- endfor -%}
+</{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}</{{tag}}>
 {%- set desc = n.find("description") %}
 <{{tag}} class="mib_desc">{{ desc.text }}</{{tag}}>
 <{{tag}}>{{ n|format_syntax }}</{{tag}}>
 {%- endmacro %}
-<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssreset/cssreset-min.css">
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssnormalize/cssnormalize-min.css">
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssgrids/cssgrids-min.css">
 <!-- <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssgrids-responsive/cssgrids-responsive-min.css"> -->
 <link rel="stylesheet" type="text/css" href="mibstyle.css">
-<head>
 <title>{{ module_name }}</title>
 </head>
 <body>
+<div id="hd">
 <h1>MIB: {{ module_name }} </h1>
 <pre>
 {{ mib.find("./module/description").text}}
 </pre>
+</div>
+<div class="yui3-g" id="layout">
+<div class="yui3-u" id="nav">
+</div>
+<div class="yui3-u" id="main-content">
 <p>identity oid: {{root}}</p>
 <table id="nodes" class="main">
     <thead>
-        <th style="width: 6em"></th>
+        <th style="width: 6em">1234567890</th>
         <th>Name</th>
         <th>oid</th>
         <th>description</th>
@@ -51,5 +66,7 @@
     {%- endfor %}
 </tbody>
 </table>
+</div>
+</div>
 </body>
 </html>
