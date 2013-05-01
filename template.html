@@ -33,15 +33,17 @@
 <body>
 <div id="hd">
 <h1>MIB: {{ module_name }} </h1>
-<pre>
-{{ mib.find("./module/description").text}}
-</pre>
 </div>
 <div class="yui3-g" id="layout">
 <div class="yui3-u" id="nav">
 </div>
 <div class="yui3-u" id="main-content">
+<h1>MIB: {{ module_name }} </h1>
+<pre>
+{{ mib.find("./module/description").text}}
+</pre>
 <p>identity oid: {{root}}</p>
+<h1>Main MIB Tree</h1>
 <table id="nodes" class="main">
     <thead>
         <th style="width: 6em">1234567890</th>
@@ -67,7 +69,24 @@
     {%- endfor %}
 </tbody>
 </table>
-</div>
-</div>
+<h1>Notifications</h1>
+<h1>Groups &amp; Compliances</h1>
+<h1>Type Definitions</h1>
+<h1>Imports</h1>
+<table id="imports" class="main">
+    <thead>
+        <th>#</th>
+        <th>name</th>
+        <th>module</th>
+    </thead>
+    <tbody>
+{%- for node in mib.findall("./imports/import") -%}
+<tr><td>{{ loop.index }}</td><td>{{ node.get("name") }}</td><td>{{ node.get("module") }}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div><!-- main-content -->
+</div><!-- layout -->
 </body>
 </html>
