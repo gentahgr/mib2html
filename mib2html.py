@@ -122,7 +122,11 @@ def build_tree_index(dom,root):
         toid = oid_str2tuple(oid)
         curlevel = len( toid )
         for lvl in xrange(rootlevel, curlevel):
-            ttree[ toid[rootlevel-1:lvl] ] = toid[lvl]
+            key = toid[rootlevel-1:lvl] 
+            if ttree.has_key(key):
+                ttree[key] = max( ttree[key], toid[lvl] )
+            else:
+                ttree[key] = toid[lvl]
             # print "{}.{} [{}:{}]/ {} = {}".format( toid, curlevel, rootlevel - 1, lvl, toid[rootlevel-1:lvl], toid[lvl])
     return (rootlevel, ttree)
 
