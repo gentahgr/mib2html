@@ -1,10 +1,10 @@
 <TODO>
 - ページ横に見出しをつける
 * ツリー構造を綺麗な縦線にする
-- Node以外の構造を出力する
-  - import
+* Node以外の構造を出力する
+  * import
   - typedef
-  - compliance
+  * compliance
 − 名前にハイパーリンクを貼る
 ? テーブル出力方法の見直し
 - accessを出力できるか検討

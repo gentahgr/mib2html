@@ -10,7 +10,7 @@
 {{ s }}
 {%- endfor %}
 {% endmacro %}
-{% macro draw_row(n,tag="td",oid_suffix="") -%}
+{% macro draw_row(n,tag="td",syntax="", oid_suffix="") -%}
 <{{tag}} class="mib_indent">
 {%- for i in n.get("oid")|calc_indent -%}
 <span class="tree_pattern{{i}}">
@@ -22,8 +22,15 @@
 </{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}{{ oid_suffix }}</{{tag}}>
 {%- set desc = n.find("description") %}
 <{{tag}} class="mib_desc">{{ desc.text|truncate(120) }}</{{tag}}>
-<{{tag}}>{{ n|format_syntax }}</{{tag}}>
+<{{tag}}>{{ syntax }}</{{tag}}>
 {%- endmacro %}
+{%- macro build_name_list(obj_list) -%}
+    {%- set objs = [] -%}
+    {%- for obj in obj_list -%}
+      {%- set dummy = objs.append( obj.get("name")) -%}
+    {%- endfor -%}
+    {{ objs|join(", ") }}
+{%- endmacro -%}
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssnormalize/cssnormalize-min.css">
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssgrids/cssgrids-min.css">
 <!-- <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssgrids-responsive/cssgrids-responsive-min.css"> -->
@@ -53,18 +60,27 @@
         <th>syntax</th>
     </thead>
     <tbody>
-    {%- for node in mib.findall("./nodes/*") %}
-        {%- if node.tag != 'table' -%}
+    {%- for oid_t, node in mib_array %}
+        {%- if node.tag == 'scalar' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node, syntax=node|format_syntax) }}</tr>
+        {%- elif node.tag == 'node' -%}
         <tr class="{{ node.tag }}">{{ draw_row(node) }}</tr>
-        {% else %}
+        {% elif node.tag == 'table' %}
         <tr class="{{ node.tag }}">{{ draw_row(node) }}</tr>
         {%- set row = node.find("row") -%}
-        <tr class="row">{{ draw_row(row) }}</tr>
+        <tr class="row">{{ draw_row(row, syntax=build_name_list(row.iterfind("./linkage/*" ))) }}</tr>
         {%- set suffix = row|linkage_suffix -%}
-        {%- for col in row.findall("column") -%}
-        <tr class="column {{"column_first" if loop.first}} {{"column_last" if loop.last}}">{{ draw_row(col,oid_suffix=suffix) }}</tr>
+        {%- for col in row.iterfind("column") -%}
+        <tr class="column {{"column_first" if loop.first}} {{"column_last" if loop.last}}">{{ draw_row(col,oid_suffix=suffix, syntax=col|format_syntax) }}</tr>
         {%- endfor -%}
-<!-- <dl class="table_index"><dt>INDEX</dt><dd>{% for idx in row.findall("tdnkage/index") %}{{ idx.get("name") }}, {% endfor -%}</dd></dl> -->
+        {%- elif node.tag == 'notification' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node,syntax=build_name_list(node.iterfind("./objects/object" ))) }}</tr>
+        {%- elif node.tag == 'group' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node,syntax=build_name_list(node.iterfind("./members/member" ))) }}</tr>
+        {%- elif node.tag == 'compliance' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node,syntax=build_name_list(node.iterfind("./requires/*" ))) }}</tr>
+        {%- else -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node,syntax="under construction") }}</tr>
         {%- endif -%}
     {%- endfor %}
 </tbody>

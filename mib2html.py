@@ -87,7 +87,6 @@ def build_index(dom):
     """parse index table for all elements having oid attribute
 
     1. build cross reference for oid and node name
-    2. build supplemental info for tree structure
        
 
     input:
@@ -105,6 +104,26 @@ def build_index(dom):
         result[name] = (oid,node)
 
     return result
+
+def build_mib_node_array(dom):
+    """Build sorted array of oid nodes 
+    input:
+        dom: ElementTree
+    result:
+        array of (oid(tuple), node) sorted by oid
+    """
+    mib_array = []
+    for node in dom.iterfind(".//*[@oid]"):
+        oid = node.get("oid")
+        tag = node.tag
+
+        if tag not in ["row", "column"]:
+            # exclude table content
+            mib_array.append( (oid_str2tuple(oid), node) )
+
+    mib_array.sort(cmp= lambda x,y: cmp( x[0], y[0] ))
+    return mib_array
+
 
 def build_tree_index(dom,root):
     """build index for tree drawing
@@ -340,6 +359,8 @@ if __name__ == '__main__':
             # prepare
             mib_index = build_index(mib)
             root_oid, root_node = find_root(mib,mib_index)
+            mib_array = build_mib_node_array(mib)
+            
 
             template_env = jinja2.Environment(autoescape=True,loader=jinja2.FileSystemLoader("."))
             template_env.filters["format_syntax"] = generate_format_syntax(root_node)
@@ -349,7 +370,7 @@ if __name__ == '__main__':
             template_env.filters["linkage_suffix"] = linkage_suffix
 
             template = template_env.get_template("template.html")
-            print template.render(mib=mib,index=mib_index,root=root_oid)
+            print template.render(mib=mib,index=mib_index,mib_array=mib_array, root=root_oid)
 
         except InvalidMibError as e :
             print >> sys.stderr, "MIB XML is invalid: {}".format(e.message)
