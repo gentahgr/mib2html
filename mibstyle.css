@@ -4,7 +4,11 @@
 
 
 h1 {
-    font-size: 120%;
+    font-size: 1.6em;
+}
+
+h2 {
+    font-size: 1.2em;
 }
 
 a {
@@ -132,3 +136,28 @@ tr.column_first {
 tr.column_last {
     border-bottom: 3px solid black;
 }
+
+/* description section */
+
+.nodename {
+    width: 90%;
+    border-bottom: 2px solid blue;
+}
+
+.oid:before {
+    content: "[";
+}
+
+.oid:after {
+    content: "]";
+}
+
+.oid {
+    font-size: 80%;
+    color: green;
+}
+
+dt {
+    font-style: italic;
+}
+

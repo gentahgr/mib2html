@@ -85,8 +85,32 @@
     {%- endfor %}
 </tbody>
 </table>
+
+{%- macro descsection(nodes,children) -%}
+{%- for node in mib.iterfind(nodes) %}
+<h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span></h2>
+<dl>
+<dt>oid</dt>
+<dd>{{ node.get("oid") }}</dd>
+<dt>description</dt>
+<dd>{{ node.find("description").text }}</dd>
+<dt>status</dt>
+<dd>{{ node.get("status") }}</dd>
+<dt>objects</dt>
+<dd><ol> {% for obj in node.iterfind(children) -%}
+<li>{{ obj.get("name") }}</li>
+{% endfor %}
+</ol></dd>
+</dl>
+{%- endfor -%}
+{%- endmacro -%}
+
 <h1>Notifications</h1>
-<h1>Groups &amp; Compliances</h1>
+{{ descsection("notifications/notification", "objects/object") }}
+<h1>Groups</h1>
+{{ descsection("groups/group", "members/member") }}
+<h1>Compliances</h1>
+{{ descsection("compliances/compliance", "requires/*") }}
 <h1>Type Definitions</h1>
 <h1>Imports</h1>
 <table id="imports" class="main">
