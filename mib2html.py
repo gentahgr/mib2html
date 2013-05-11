@@ -48,6 +48,7 @@ mib structure
 """
 
 from xml.etree import ElementTree as et
+import jinja2
 import sys
 
 # Common exception
@@ -87,7 +88,6 @@ def build_index(dom):
     """parse index table for all elements having oid attribute
 
     1. build cross reference for oid and node name
-       
 
     input:
         dom: ElementTree
@@ -100,7 +100,7 @@ def build_index(dom):
     for node in dom.iterfind(".//*[@oid]"):
         oid = node.get("oid")
         name = node.get("name")
-        result[oid] = (name,node)
+        # result[oid] = (name,node)
         result[name] = (oid,node)
 
     return result
@@ -152,7 +152,7 @@ def build_tree_index(dom,root):
 
 def find_root(dom,index):
     """find base oid
-    return root node oid
+    return root node name
 
     input:
         dom: mib (ElementTree)
@@ -170,9 +170,49 @@ def find_root(dom,index):
     if identityName not in index:
         raise InvalidMibError("identity[@node]")
 
-    return index[identityName]
+    return identityName
 
 # prepare template
+
+'''
+filters/functions can use same context as template by decorating with contextfilter/contextfunction
+'''
+
+def prepare_context(mib):
+    """Build context dict for rendering
+    """
+
+    # build various indicies from mib(xml ElementTree)
+    mib_index = build_index(mib)
+    root_name = find_root(mib, mib_index)
+    root_oid  = mib_index[root_name][0]
+    mib_array = build_mib_node_array(mib)
+    oid_prefix_level, ttree = build_tree_index(mib, root_oid)
+
+    root_oidlist = root_oid.split(u".")[:-1]
+    root_oid_prefix = u".".join(root_oidlist) + "."
+
+    return {
+            u"mib": mib,
+            u"root": root_oid,
+            u"root_name": root_name,
+            u"index": mib_index,
+            u"tree_index": ttree,
+            u"oid_prefix_level": oid_prefix_level,
+            u"mib_array": mib_array,
+            u"root_oid_prefix": root_oid_prefix,
+            u"root_oid_prefix_len": len(root_oid_prefix),
+            }
+
+def prepare_filters():
+    return {
+            u"format_syntax":   fl_format_syntax,
+            u"calc_indent":     fl_calc_oid_indent,
+            u"short_oid":       fl_short_oid,
+            u"format_desc":     fl_format_description,
+            u"linkage_suffix":  fl_linkage_suffix,
+            }
+            
 
 # jinja filter functions
 class TagString(object):
@@ -187,130 +227,125 @@ class TagString(object):
     def __repr__(self):
         return "TagString: {}/{}/{}".format(self.string,self.tag_type,self.param)
 
-def generate_format_syntax(root_name):
-
-
     def is_local(mod_name):
         return mod_name == root_name
 
-    def format_syntax(node):
-        """create string expression of syntax (mib data type)
-        input:
-
-         node: an Element which as "syntax" child element
-        return:
-            list of TagString
-        """
-        syntag = node.find("syntax")
-        if syntag is None:
-            # ignore gracefully
-            return ''
-
-        result = []
-        typetag = syntag[0]
-        if typetag.tag == "type":
-            # type
-            mod_name = typetag.get("module")
-            name = typetag.get("name")
-            if is_local(mod_name):
-                result.append( TagString(name,"typedef",mod_name))
-            else:
-                result.append( TagString(name,"import",mod_name))
-        elif typetag.tag == "typedef":
-            basetype = typetag.get("basetype")
-            if basetype == "Enumeration":
-                result.append( TagString( u"/ ".join(
-                    [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
-                    )))
-
-            elif basetype == "Bits":
-                result.append( TagString( u"| ".join(
-                    [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
-                    )))
-            else:
-                parent = typetag.find("parent")
-                if parent is None:
-                    result.append(TagString(basetype))
-                else:
-                    basetype = parent.get("name")
-                    mod_name = parent.get("module")
-                    if is_local(mod_name):
-                       result.append(TagString(basetype,"typedef",mod_name))
-                    else:
-                       result.append(TagString(basetype,"import",mod_name))
-                ranges = typetag.findall("range")
-                if ranges:
-                    result.append( TagString( u" (" ))
-                    result.append( TagString( u", ".join(
-                        [ "{} .. {}".format(r.get("min"),r.get("max")) for r in ranges ]
-                    )))
-                    result.append( TagString( u")" ))
-        else:
-            raise InvalidMibError("syntax for {} has no type or typedef node".format(node.get("name")))
-
-        return u"".join(r.string for r in result)
-        # return result
-    return format_syntax
-
-def generate_calc_oid_indent(dom, rootOid):
-    """generator for indent level calculation
+@jinja2.contextfilter
+def fl_format_syntax(ctx, node):
+    """create string expression of syntax (mib data type)
     input:
-        rootOid: oid for root node (string)
+     ctx: context of the template
+     node: an Element which as "syntax" child element
     return:
-        a function for oid calculation
+        list of TagString
     """
-    # oid_prefix_level = oidlen(rootOid) - 1
-    oid_prefix_level, ttree = build_tree_index(dom, rootOid)
+    def is_local(mod_name):
+        return mod_name == ctx.parent[u"root_name"]
 
-    def calc_oid_indent(oid_str):
-        """calculate in dent depth and tree structure info
-        input:
-            oid_str: oid string
-        return:
-            a list of flags
-            example:
-              [0,1,1,0,2]
-                0: vertical line through the cell
-                1: no line
-                2: vertical line through the cell (with horizontal line)
-                3: vertical line to the cell (with horizontal line)
-        """
-        oid = oid_str2tuple(oid_str)
-        cur_level= len(oid)
-        result = []
-        for depth in xrange(oid_prefix_level, cur_level):
-            val = oid[depth]
-            pattern = 0 if ttree[ oid[oid_prefix_level-1:depth] ] > val else 1
-            pattern += 0 if depth + 1 < cur_level else 2
-            result.append( pattern )
-            # print >>sys.stderr, "d={}, ttree{} = {}, v = {} -> {}".format(
-            #        depth, oid[oid_prefix_level-1:depth], ttree[ oid[oid_prefix_level-1:depth] ], val, pattern )
-        return result
-    return calc_oid_indent
+    syntag = node.find("syntax")
+    if syntag is None:
+        # ignore gracefully
+        return ''
 
-def generate_short_oid(rootOid):
-    """generator for short oid expression
+    result = []
+    typetag = syntag[0]
+    if typetag.tag == "type":
+        # type
+        mod_name = typetag.get("module")
+        name = typetag.get("name")
+        if is_local(mod_name):
+            result.append( TagString(name,"typedef",mod_name))
+        else:
+            result.append( TagString(name,"import",mod_name))
+    elif typetag.tag == "typedef":
+        basetype = typetag.get("basetype")
+        if basetype == "Enumeration":
+            result.append( TagString( u"/ ".join(
+                [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
+                )))
+
+        elif basetype == "Bits":
+            result.append( TagString( u"| ".join(
+                [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
+                )))
+        else:
+            parent = typetag.find("parent")
+            if parent is None:
+                result.append(TagString(basetype))
+            else:
+                basetype = parent.get("name")
+                mod_name = parent.get("module")
+                if is_local(mod_name):
+                   result.append(TagString(basetype,"typedef",mod_name))
+                else:
+                   result.append(TagString(basetype,"import",mod_name))
+            ranges = typetag.findall("range")
+            if ranges:
+                result.append( TagString( u" (" ))
+                result.append( TagString( u", ".join(
+                    [ "{} .. {}".format(r.get("min"),r.get("max")) for r in ranges ]
+                )))
+                result.append( TagString( u")" ))
+    else:
+        raise InvalidMibError("syntax for {} has no type or typedef node".format(node.get("name")))
+
+    return u"".join(r.string for r in result)
+
+@jinja2.contextfilter
+def fl_calc_oid_indent(ctx, oid_str):
+    """calculate in dent depth and tree structure info
+    input:
+        ctx: context of the template
+        oid_str: oid string
+    return:
+        a list of flags
+        example:
+          [0,1,1,0,2]
+            0: vertical line through the cell
+            1: no line
+            2: vertical line through the cell (with horizontal line)
+            3: vertical line to the cell (with horizontal line)
+    """
+    # extract variables from the context
+    oid_prefix_level = ctx.parent[u"oid_prefix_level"]
+    ttree = ctx.parent[u"tree_index"]
+
+    oid = oid_str2tuple(oid_str)
+    cur_level= len(oid)
+    result = []
+    for depth in xrange(oid_prefix_level, cur_level):
+        val = oid[depth]
+        pattern = 0 if ttree[ oid[oid_prefix_level-1:depth] ] > val else 1
+        pattern += 0 if depth + 1 < cur_level else 2
+        result.append( pattern )
+        # print >>sys.stderr, "d={}, ttree{} = {}, v = {} -> {}".format(
+        #        depth, oid[oid_prefix_level-1:depth], ttree[ oid[oid_prefix_level-1:depth] ], val, pattern )
+    return result
+
+@jinja2.contextfilter
+def fl_short_oid(ctx, oid_str):
+    """Shorten oid string
 
     example:
        root: 1.3.6.9.9
        1.3.6.9.9.1.2.3.4 -> ..(9).1.2.3.4
 
     input:
-        rootOid: oid for root node (string)
+        ctx: template context
+         - root_oid_prefix, root_oid_prefix_len
+        oid_str: oid for root node (string)
+
     return:
-        a function to shorten oid
+        shortened oid (string)
     """
-    root_oidlist = rootOid.split(u".")[:-1]
-    root_oid_prefix = u".".join(root_oidlist) + "."
-    oid_prefix_len = len(root_oidlist)
 
-    def short_oid(oid_str):
-        "shorten oid string"
-        if oid_str.startswith(root_oid_prefix):
-            oid_list = oid_str.split(u".")[oid_prefix_len:]
-            return u"..({}).".format(oid_list[0]) + u".".join(oid_list[1:])
+    root_oid_prefix = ctx.parent[u"root_oid_prefix"]
+    oid_prefix_len  = ctx.parent[u"root_oid_prefix_len"]
 
-    return short_oid
+    if oid_str.startswith(root_oid_prefix):
+        oid_list = oid_str[oid_prefix_len:].split(u".")
+        # print >>sys.stderr, "oid_str={}, oid_list={}, oid_prefix={}, len={}".format( oid_str, oid_list, root_oid_prefix, oid_prefix_len )
+        return u"..({}).".format(oid_list[0]) + u".".join(oid_list[1:])
 
 def create_oid_suffix_str(num):
     """
@@ -321,7 +356,7 @@ def create_oid_suffix_str(num):
     return basestr[:num * 2]
 
        
-def linkage_suffix(row):
+def fl_linkage_suffix(row):
     """create oid suffix suitable for linkage
     """
     augment = row.find("linkage/augments")
@@ -331,7 +366,7 @@ def linkage_suffix(row):
     # print >>sys.stderr, "Linkages: {}, {}".format(row.get("name"),len(linkages))
     return create_oid_suffix_str(len(linkages))
 
-def format_description(desc_str):
+def fl_format_description(desc_str):
     """Format description in SMIv2 MIB file for HTML output
     input:
         desc_str: description string (unicode_str)
@@ -340,7 +375,6 @@ def format_description(desc_str):
     """
     return desc_str
 
-import jinja2
 if __name__ == '__main__':
     def main():
         import sys
@@ -357,20 +391,13 @@ if __name__ == '__main__':
 
         try:
             # prepare
-            mib_index = build_index(mib)
-            root_oid, root_node = find_root(mib,mib_index)
-            mib_array = build_mib_node_array(mib)
-            
 
             template_env = jinja2.Environment(autoescape=True,loader=jinja2.FileSystemLoader("."))
-            template_env.filters["format_syntax"] = generate_format_syntax(root_node)
-            template_env.filters["calc_indent"] = generate_calc_oid_indent(mib, root_oid)
-            template_env.filters["short_oid"] = generate_short_oid(root_oid)
-            template_env.filters["format_desc"] = format_description
-            template_env.filters["linkage_suffix"] = linkage_suffix
+            for key, func in prepare_filters().iteritems():
+                template_env.filters[ key ] = func
 
             template = template_env.get_template("template.html")
-            print template.render(mib=mib,index=mib_index,mib_array=mib_array, root=root_oid)
+            print template.render(**(prepare_context(mib)) )
 
         except InvalidMibError as e :
             print >> sys.stderr, "MIB XML is invalid: {}".format(e.message)
