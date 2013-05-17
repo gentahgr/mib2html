@@ -211,6 +211,7 @@ def prepare_filters():
             u"short_oid":       fl_short_oid,
             u"format_desc":     fl_format_description,
             u"linkage_suffix":  fl_linkage_suffix,
+            u"parse_typedef":   fl_parse_typedef,
             }
             
 
@@ -230,66 +231,99 @@ class TagString(object):
     def is_local(mod_name):
         return mod_name == root_name
 
-@jinja2.contextfilter
-def fl_format_syntax(ctx, node):
+def fl_format_syntax(node):
     """create string expression of syntax (mib data type)
     input:
-     ctx: context of the template
-     node: an Element which as "syntax" child element
+        node: an Element which as "syntax" child element
     return:
         list of TagString
     """
-    def is_local(mod_name):
-        return mod_name == ctx.parent[u"root_name"]
-
     syntag = node.find("syntax")
     if syntag is None:
         # ignore gracefully
         return ''
 
-    result = []
     typetag = syntag[0]
     if typetag.tag == "type":
         # type
         mod_name = typetag.get("module")
         name = typetag.get("name")
-        if is_local(mod_name):
-            result.append( TagString(name,"typedef",mod_name))
-        else:
-            result.append( TagString(name,"import",mod_name))
+        return name
     elif typetag.tag == "typedef":
-        basetype = typetag.get("basetype")
-        if basetype == "Enumeration":
-            result.append( TagString( u"/ ".join(
-                [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
-                )))
+        types = fl_parse_typedef(typetag)
+        return types[0][1]
+    else:
+        raise InvalidMibError("syntax for {} has no type or typedef node".format(node.get("name")))
 
-        elif basetype == "Bits":
-            result.append( TagString( u"| ".join(
-                [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
-                )))
-        else:
-            parent = typetag.find("parent")
-            if parent is None:
-                result.append(TagString(basetype))
-            else:
-                basetype = parent.get("name")
-                mod_name = parent.get("module")
+'''
                 if is_local(mod_name):
                    result.append(TagString(basetype,"typedef",mod_name))
                 else:
                    result.append(TagString(basetype,"import",mod_name))
-            ranges = typetag.findall("range")
-            if ranges:
-                result.append( TagString( u" (" ))
-                result.append( TagString( u", ".join(
-                    [ "{} .. {}".format(r.get("min"),r.get("max")) for r in ranges ]
-                )))
-                result.append( TagString( u")" ))
-    else:
-        raise InvalidMibError("syntax for {} has no type or typedef node".format(node.get("name")))
+'''
 
-    return u"".join(r.string for r in result)
+def fl_parse_typedef(typetag):
+    '''Parse "typedef" node
+    input:
+        typetag : an Element of "typedef" node
+    return:
+        list of tuple
+        [ (param1, value1), (param2, value2),...]
+        most significant elemnt shall be the fist element of the list.
+        The value of the first element is shown for short-form.
+    exception:
+        TypeError: if XML element type is not "typedef"
+    '''
+
+    # check node type (assertion)
+    if typetag.tag != "typedef":
+        raise TypeError
+
+    result=[]
+
+    basetype = typetag.get(u"basetype")
+    if basetype == u"Enumeration":
+        result.append( (u"Enumeration", u"/ ".join(
+            [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
+            )))
+
+    elif basetype == "Bits":
+        result.append( ("Bits", u"| ".join( reversed(
+            [ u"{}({})".format( num.get("name"), num.get("number")) for num in typetag.iterfind("namednumber") ]
+            ))))
+    else:
+        parent = typetag.find("parent")
+        ranges = typetag.findall("range")
+        if ranges:
+            # VALUE_TYPE(a..b, c..d)
+            range_str = []
+    
+            # value type part
+            range_str.append( basetype if parent is None else parent.get("name") )
+    
+            # value range part
+            range_str.append( u" (" )
+            range_str.append( u", ".join(
+                [ "{} .. {}".format(r.get("min"),r.get("max")) for r in ranges ]
+            ))
+            range_str.append( u")" )
+            result.append( (u"Type(Range)", u"".join(range_str)) )
+        else:
+            # Type field is provided for regular types only
+            # No type field added for Enumeration or Bits because they are redundant
+            # No type field added for ranged values because data type is already indicated with ranges
+            result.append( (u"Type", basetype if parent is None else parent.get("name") ))
+
+    # status of the type
+    result.append( (u"status", typetag.get(u"status", u"current")))
+
+    # other information
+    for fields in [u"default", u"format", u"units", u"description", u"referene" ]:
+        value = typetag.findtext(fields)
+        if value is not None:
+            result.append( (fields, value) )
+
+    return result
 
 @jinja2.contextfilter
 def fl_calc_oid_indent(ctx, oid_str):

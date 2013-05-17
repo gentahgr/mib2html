@@ -3,7 +3,7 @@
 * ツリー構造を綺麗な縦線にする
 * Node以外の構造を出力する
   * import
-  - typedef
+  - typedef => Added in description part
   * compliance
 − 名前にハイパーリンクを貼る
 ? テーブル出力方法の見直し
@@ -11,3 +11,6 @@
 - descriptionの整形
 - descriptionをはみ出させて，表の高さを揃える
 * tableのoidにindexを付与する
+* typedefの対応
+- 説明部の対応
+- Link化

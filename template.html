@@ -112,6 +112,15 @@
 <h1>Compliances</h1>
 {{ descsection("compliances/compliance", "requires/*") }}
 <h1>Type Definitions</h1>
+{%- for node in mib.iterfind("typedefs/typedef") %}
+<h2 class="nodename">{{ node.get("name") }}</span></h2>
+<dl>
+  {%- for field, value in node|parse_typedef -%}
+  <dt>{{ field }}</dt>
+  <dd>{{ value }}</dd>
+  {%- endfor %}
+</dl>
+{% endfor %}
 <h1>Imports</h1>
 <table id="imports" class="main">
     <thead>
