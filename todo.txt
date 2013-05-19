@@ -13,4 +13,6 @@
 * tableのoidにindexを付与する
 * typedefの対応
 - 説明部の対応
+  * scalar
+  - table
 - Link化

@@ -212,6 +212,7 @@ def prepare_filters():
             u"format_desc":     fl_format_description,
             u"linkage_suffix":  fl_linkage_suffix,
             u"parse_typedef":   fl_parse_typedef,
+            u"parse_scalar":    fl_parse_scalar,
             }
             
 
@@ -277,7 +278,7 @@ def fl_parse_typedef(typetag):
 
     # check node type (assertion)
     if typetag.tag != "typedef":
-        raise TypeError
+        raise TypeError("The specified node is not typedef Element. type: {}".format( typetag.tag ))
 
     result=[]
 
@@ -320,6 +321,49 @@ def fl_parse_typedef(typetag):
     # other information
     for fields in [u"default", u"format", u"units", u"description", u"referene" ]:
         value = typetag.findtext(fields)
+        if value is not None:
+            result.append( (fields, value) )
+
+    return result
+
+def fl_parse_scalar(node):
+    """parse for scalar
+    input:
+        node: (Element)
+    return:
+        list of tuple
+        [ (param1, value1), (param2, value2),...]
+        most significant elemnt shall be the fist element of the list.
+        The value of the first element is shown for short-form.
+    exception:
+        TypeError: if XML element type is not "typedef"
+        InvalidMibError : if scalar node has no syntax
+    """
+    # check node type (assertion)
+    if node.tag != "scalar":
+        raise TypeError(u"The specified node is not scalar Element. type: {}".format( node.tag ))
+
+    result=[]
+
+    result.append( (u"oid", node.get(u"oid")))
+    syntax_node = node.find(u"syntax/*")
+    if syntax_node is not None:
+        if syntax_node.tag == u"type":
+            result.append( ( u"type", syntax_node.get(u"name")) )
+        elif syntax_node.tag == u"typedef":
+            # append fields of typedef to scalar except for status field
+            result += [ pair for pair in fl_parse_typedef(syntax_node) if pair[0] != u"status" ]
+        else:
+            raise InvalidMibError( u"Invalid syntax tag for scalar node: {}".format(node.get(u"name") ))
+    else:
+        raise InvalidMibError( u"No syntax tag for scalar node: {}".format(node.get(u"name") ))
+
+    # add attributes
+    result.append( (u"status", node.get(u"status", u"current")))
+
+     # other information
+    for fields in [u"access", u"default", u"format", u"units", u"description", u"referene" ]:
+        value = node.findtext(fields)
         if value is not None:
             result.append( (fields, value) )
 

@@ -104,7 +104,21 @@
 </dl>
 {%- endfor -%}
 {%- endmacro -%}
-
+<h1>Nodes</h1>
+{%- for node in mib.iterfind("nodes/*") %}
+{%- if node.tag == "scalar" -%}
+<h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Value]</span></h2>
+<dl>
+  {%- for field, value in node|parse_scalar -%}
+  <dt>{{ field }}</dt>
+  <dd>{{ value }}</dd>
+  {%- endfor %}
+</dl>
+{%- elif node.tag == "table" -%}
+<h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Table]</span></h2>
+<p>TO BE IMPLEMENTED</p>
+{%- endif -%}
+{% endfor -%}
 <h1>Notifications</h1>
 {{ descsection("notifications/notification", "objects/object") }}
 <h1>Groups</h1>

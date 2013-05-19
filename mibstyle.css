@@ -157,6 +157,11 @@ tr.column_last {
     color: green;
 }
 
+.nodetype {
+    font-size: 80%;
+    color: blue;
+}
+
 dt {
     font-style: italic;
 }
