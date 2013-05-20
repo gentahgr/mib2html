@@ -110,13 +110,39 @@
 <h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Value]</span></h2>
 <dl>
   {%- for field, value in node|parse_scalar -%}
-  <dt>{{ field }}</dt>
-  <dd>{{ value }}</dd>
+  <dt>{{ field }}</dt><dd>{{ value }}</dd>
   {%- endfor %}
 </dl>
 {%- elif node.tag == "table" -%}
 <h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Table]</span></h2>
-<p>TO BE IMPLEMENTED</p>
+<dl>
+  {%- for field, value in node|parse_table -%}
+  <dt>{{ field }}</dt><dd>{{ value }}</dd>
+  {%- endfor %}
+</dl>
+<table class="main">
+<tr>
+  <th>oid</th>
+  <th>index</th>
+  <th style="width: auto">name</th>
+  <th></th>
+</tr>
+  {%- for row in node|parse_table_toc -%}<tr>
+    <td>{{ row[0] }}</td>
+    <td>{{ "" if row[1] == 0 else row[1]}}</td>
+    <td>{{ row[2] }}</td>
+  </tr>{%- endfor %}
+ </table>
+
+{# table column #}
+  {% for cnode in node.iterfind("row/column") -%}
+<h2 class="nodename">{{ cnode.get("name") }} <span class="oid">{{ cnode.get("oid")|short_oid }}</span> <span class="nodetype">[Column]</span></h2>
+<dl>
+  {%- for field, value in cnode|parse_scalar -%}
+  <dt>{{ field }}</dt><dd>{{ value }}</dd>
+  {%- endfor %}
+</dl>
+  {%- endfor %}
 {%- endif -%}
 {% endfor -%}
 <h1>Notifications</h1>
@@ -130,8 +156,7 @@
 <h2 class="nodename">{{ node.get("name") }}</span></h2>
 <dl>
   {%- for field, value in node|parse_typedef -%}
-  <dt>{{ field }}</dt>
-  <dd>{{ value }}</dd>
+  <dt>{{ field }}</dt><dd>{{ value }}</dd>
   {%- endfor %}
 </dl>
 {% endfor %}

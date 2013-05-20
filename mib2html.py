@@ -49,6 +49,7 @@ mib structure
 
 from xml.etree import ElementTree as et
 import jinja2
+from itertools import count, izip
 import sys
 
 # Common exception
@@ -213,6 +214,9 @@ def prepare_filters():
             u"linkage_suffix":  fl_linkage_suffix,
             u"parse_typedef":   fl_parse_typedef,
             u"parse_scalar":    fl_parse_scalar,
+            u"parse_table":     fl_parse_table,
+            u"parse_table_toc": fl_parse_table_toc,
+            u"parse_row":       fl_parse_row,
             }
             
 
@@ -339,9 +343,13 @@ def fl_parse_scalar(node):
         TypeError: if XML element type is not "typedef"
         InvalidMibError : if scalar node has no syntax
     """
+
     # check node type (assertion)
+    """
+    # skip type check because this routine is applicable for "column" of table
     if node.tag != "scalar":
         raise TypeError(u"The specified node is not scalar Element. type: {}".format( node.tag ))
+    """
 
     result=[]
 
@@ -361,8 +369,95 @@ def fl_parse_scalar(node):
     # add attributes
     result.append( (u"status", node.get(u"status", u"current")))
 
-     # other information
+    # other information
     for fields in [u"access", u"default", u"format", u"units", u"description", u"referene" ]:
+        value = node.findtext(fields)
+        if value is not None:
+            result.append( (fields, value) )
+
+    return result
+
+
+def fl_parse_table(node):
+    """parse table #1 : description part
+
+    Two individual parsers are provided for table type
+    #1. parser for field of table element
+    #2. builder for column and index info
+
+    input:
+        node: (Table Element)
+    return:
+        [(field,value),(field,value)]
+
+    """
+
+    result = [
+        (u"oid", node.get(u"oid")),
+        (u"status", node.get(u"status", u"current"))
+        ]
+
+    # other information
+    for fields in [ u"description", u"referene" ]:
+        value = node.findtext(fields)
+        if value is not None:
+            result.append( (fields, value) )
+
+    return result
+
+def fl_parse_table_toc(node):
+    """parse table #2 : column list part
+    input:
+        node: (Table Element)
+    return:
+        tuple of list: (last_oid, index_number, column_name )
+    """
+    if node.tag != u"table":
+        raise TypeError(u"The specified node is not a table Element. type: {}".format( node.tag ))
+
+    # build index dict
+    index_dict = {}
+    for index_node, i in izip( node.iterfind(u"row/linkage/index"), count(1)):
+        index_dict[index_node.get(u"name")] = i
+
+    print >>sys.stderr, "Node: {}".format( node.get("name"))
+    print >>sys.stderr, index_dict
+
+    columns = []
+    # build column list
+    for cl in node.iterfind(u"row/column"):
+        c_oid = cl.get(u"oid")
+        c_oid_n = c_oid[ c_oid.rindex(u".")+1:]
+
+        c_name = cl.get(u"name")
+        c_index = index_dict.get(c_name, 0)
+
+        columns.append( (c_oid_n, c_index, c_name) )
+
+    return columns
+
+def fl_parse_row(node):
+    """parse for row
+
+    because main index is shown in table node,
+    no special drawing is not provided for row element.
+
+    input:
+        node: (Element)
+    return:
+        list of tuple
+        [ (param1, value1), (param2, value2),...]
+        most significant elemnt shall be the fist element of the list.
+        The value of the first element is shown for short-form.
+    """
+    result = [
+        (u"oid", node.get(u"oid")),
+        (u"status", node.get(u"status", u"current")),
+        (u"create", node.get(u"create", u"false"))
+        ]
+
+    # other information
+    for fields in [ u"description", u"referene" ]:
         value = node.findtext(fields)
         if value is not None:
             result.append( (fields, value) )
