@@ -135,9 +135,11 @@
  </table>
 
 {# table row #}
-<h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Row]</span></h2>
+{%- set row = node.find("row") -%}
+{%- set suffix = row|linkage_suffix -%}
+<h2 class="nodename">{{ row.get("name") }} <span class="oid">{{ row.get("oid")|short_oid }}</span> <span class="nodetype">[Row]</span></h2>
 <dl>
-  {%- for field, value in node|parse_row-%}
+  {%- for field, value in row|parse_row-%}
   <dt>{{ field }}</dt><dd>{{ value }}</dd>
   {%- endfor %}
 </dl>

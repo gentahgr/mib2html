@@ -392,7 +392,14 @@ def fl_parse_row(node):
         (u"status", node.get(u"status", u"current"))
         (u"create", node.get(u"create", u"true"))
         ]
-    
+    for fields in [ u"description", u"referene" ]:
+        value = node.findtext(fields)
+        if value is not None:
+            result.append( (fields, value) )
+
+    return result
+
+   
 
 def fl_parse_table(node):
     """parse table #1 : description part
@@ -436,8 +443,8 @@ def fl_parse_table_toc(node):
     for index_node, i in izip( node.iterfind(u"row/linkage/index"), count(1)):
         index_dict[index_node.get(u"name")] = i
 
-    print >>sys.stderr, "Node: {}".format( node.get("name"))
-    print >>sys.stderr, index_dict
+    # print >>sys.stderr, "Node: {}".format( node.get("name"))
+    # print >>sys.stderr, index_dict
 
     columns = []
     # build column list
