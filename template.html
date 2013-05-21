@@ -134,6 +134,14 @@
   </tr>{%- endfor %}
  </table>
 
+{# table row #}
+<h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Row]</span></h2>
+<dl>
+  {%- for field, value in node|parse_row-%}
+  <dt>{{ field }}</dt><dd>{{ value }}</dd>
+  {%- endfor %}
+</dl>
+
 {# table column #}
   {% for cnode in node.iterfind("row/column") -%}
 <h2 class="nodename">{{ cnode.get("name") }} <span class="oid">{{ cnode.get("oid")|short_oid }}</span> <span class="nodetype">[Column]</span></h2>
