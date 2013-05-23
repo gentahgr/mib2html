@@ -49,6 +49,7 @@ mib structure
 
 from xml.etree import ElementTree as et
 import jinja2
+from jinja2.utils import Markup
 from itertools import count, izip
 import sys
 
@@ -564,12 +565,35 @@ def fl_linkage_suffix(row):
 
 def fl_format_description(desc_str):
     """Format description in SMIv2 MIB file for HTML output
+    Type of result is Markup instead of string in order to avoid auto-escape.
+
     input:
         desc_str: description string (unicode_str)
     return:
-        unicode string including <p> tag
+        Markup including <p> tag
     """
-    return desc_str
+    mline = [ line.strip() for line in desc_str.split("\n")]
+
+    # print >>sys.stderr, mline
+    # print >>sys.stderr, "mline={}, len={}\n".format( len(mline), len(desc_str))
+    if len(mline) == 1:
+        return mline
+
+    def paragraph(lines):
+        ll = []
+        for l in lines:
+            if l == "":
+                if len(ll) > 0:
+                    yield u" ".join( ll )
+                ll = []
+            else:
+                ll.append( l )
+        if len(ll) > 0:
+            yield u" ".join( ll )
+        
+    # multiline
+    return Markup(u"").join( [ Markup( u"<p>{}</p>\n" ).format( para ) for para in paragraph( mline ) ] )
+
 
 if __name__ == '__main__':
     def main():

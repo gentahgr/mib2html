@@ -93,7 +93,7 @@
 <dt>oid</dt>
 <dd>{{ node.get("oid") }}</dd>
 <dt>description</dt>
-<dd>{{ node.find("description").text }}</dd>
+<dd>{{ node.find("description").text|format_desc }}</dd>
 <dt>status</dt>
 <dd>{{ node.get("status") }}</dd>
 <dt>objects</dt>
@@ -110,14 +110,14 @@
 <h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Value]</span></h2>
 <dl>
   {%- for field, value in node|parse_scalar -%}
-  <dt>{{ field }}</dt><dd>{{ value }}</dd>
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
   {%- endfor %}
 </dl>
 {%- elif node.tag == "table" -%}
 <h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Table]</span></h2>
 <dl>
   {%- for field, value in node|parse_table -%}
-  <dt>{{ field }}</dt><dd>{{ value }}</dd>
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
   {%- endfor %}
 </dl>
 <table class="main">
@@ -140,16 +140,16 @@
 <h2 class="nodename">{{ row.get("name") }} <span class="oid">{{ row.get("oid")|short_oid }}</span> <span class="nodetype">[Row]</span></h2>
 <dl>
   {%- for field, value in row|parse_row-%}
-  <dt>{{ field }}</dt><dd>{{ value }}</dd>
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
   {%- endfor %}
 </dl>
 
 {# table column #}
   {% for cnode in node.iterfind("row/column") -%}
-<h2 class="nodename">{{ cnode.get("name") }} <span class="oid">{{ cnode.get("oid")|short_oid }}</span> <span class="nodetype">[Column]</span></h2>
+<h2 class="nodename">{{ cnode.get("name") }} <span class="oid">{{ cnode.get("oid")|short_oid }}{{ suffix }}</span> <span class="nodetype">[Column]</span></h2>
 <dl>
   {%- for field, value in cnode|parse_scalar -%}
-  <dt>{{ field }}</dt><dd>{{ value }}</dd>
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
   {%- endfor %}
 </dl>
   {%- endfor %}
@@ -166,7 +166,7 @@
 <h2 class="nodename">{{ node.get("name") }}</span></h2>
 <dl>
   {%- for field, value in node|parse_typedef -%}
-  <dt>{{ field }}</dt><dd>{{ value }}</dd>
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
   {%- endfor %}
 </dl>
 {% endfor %}
