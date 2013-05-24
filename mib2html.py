@@ -229,27 +229,13 @@ def prepare_filters():
             
 
 # jinja filter functions
-class TagString(object):
-    def __init__(self, string, tag_type=None, param=None):
-        self.string = string
-        self.tag_type = tag_type
-        self.param = param
-
-    def __unicode__(self):
-        return self.string
-
-    def __repr__(self):
-        return "TagString: {}/{}/{}".format(self.string,self.tag_type,self.param)
-
-    def is_local(mod_name):
-        return mod_name == root_name
 
 def fl_format_syntax(node):
     """create string expression of syntax (mib data type)
     input:
         node: an Element which as "syntax" child element
     return:
-        list of TagString
+        string
     """
     syntag = node.find("syntax")
     if syntag is None:
