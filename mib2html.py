@@ -577,7 +577,7 @@ def fl_format_description(desc_str):
     # print >>sys.stderr, mline
     # print >>sys.stderr, "mline={}, len={}\n".format( len(mline), len(desc_str))
     if len(mline) == 1:
-        return mline
+        return mline[0]
 
     def paragraph(lines):
         ll = []
