@@ -46,15 +46,10 @@
 <title>{{ module_name }}</title>
 </head>
 <body>
-<div id="hd">
-<h1>MIB: {{ module_name }} </h1>
-</div>
 <div class="yui3-g" id="layout">
 <div class="yui3-u" id="main-content">
 <h1>MIB: {{ module_name }} </h1>
-<pre>
-{{ mib.find("./module/description").text}}
-</pre>
+{{ mib.find("./module/description").text|format_desc}}
 <p>identity oid: {{root}}</p>
 {{ heading1("Main MIB Tree") }}
 <table id="nodes" class="main">
@@ -114,7 +109,7 @@
 <dd>{{ node.get("status") }}</dd>
 <dt>objects</dt>
 <dd><ol> {% for obj in node.iterfind(children) -%}
-<li>{{ obj.get("name") }}</li>
+<li>{{ obj.get("name")|l }}</li>
 {% endfor %}
 </ol></dd>
 </dl>
@@ -146,7 +141,7 @@
   {%- for row in node|parse_table_toc -%}<tr>
     <td>{{ row[0] }}</td>
     <td>{{ "" if row[1] == 0 else row[1]}}</td>
-    <td>{{ row[2] }}</td>
+    <td>{{ row[2]|l }}</td>
   </tr>{%- endfor %}
  </table>
 
