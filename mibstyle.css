@@ -35,11 +35,40 @@ a {
 /* end of clearfix */
 
 #layout {
-    padding-left: 300px;
+    /* padding-left: 300px; */
+    padding: 10px;
 }
 
 #nav {
-    padding-left: -300px;
+    /* padding-left: -300px; */
+    position: fixed;
+    top: 0;
+    right: 0;
+    background-color: #2d3c82;
+    color: white;
+}
+
+.nav {
+    list-style-type: none;
+    margin: 0;
+    padding: 0 0.5em;
+}
+.nav a {
+    color: white;
+    text-decoration: none;
+}
+
+.nav a:hover {
+    color: #ffc740;
+}
+
+#navtitle {
+    display: block;
+    background-color: white;
+    color: #2d3c82;
+    margin: 2px;
+    text-align: center;
+
 }
 
 #main-content {

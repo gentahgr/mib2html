@@ -31,6 +31,14 @@
     {%- endfor -%}
     {{ objs|join(", ") }}
 {%- endmacro -%}
+
+{# show heading with anchor, and add node to navigation tree #}
+{%- set navitable = [] -%}
+{%- macro heading1(name) -%}
+{%- set linkname = "t_" ~ name|replace(" ", "_") %}
+<h1><a name="{{ linkname }}"></a>{{ name }}</h1>
+{%- set dummy = navitable.append( (name, linkname) ) -%}
+{%- endmacro -%}
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssnormalize/cssnormalize-min.css">
 <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssgrids/cssgrids-min.css">
 <!-- <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssgrids-responsive/cssgrids-responsive-min.css"> -->
@@ -42,15 +50,13 @@
 <h1>MIB: {{ module_name }} </h1>
 </div>
 <div class="yui3-g" id="layout">
-<div class="yui3-u" id="nav">
-</div>
 <div class="yui3-u" id="main-content">
 <h1>MIB: {{ module_name }} </h1>
 <pre>
 {{ mib.find("./module/description").text}}
 </pre>
 <p>identity oid: {{root}}</p>
-<h1>Main MIB Tree</h1>
+{{ heading1("Main MIB Tree") }}
 <table id="nodes" class="main">
     <thead>
         <th style="width: 6em">1234567890</th>
@@ -114,7 +120,7 @@
 </dl>
 {%- endfor -%}
 {%- endmacro -%}
-<h1>Nodes</h1>
+{{ heading1( "Nodes" ) }}
 {%- for node in mib.iterfind("nodes/*") %}
 {%- if node.tag == "scalar" -%}
 {% call heading(node) -%}<span class="nodetype">[Value]</span>{%- endcall %}
@@ -147,7 +153,7 @@
 {# table row #}
 {%- set row = node.find("row") -%}
 {%- set suffix = row|linkage_suffix -%}
-{% call heading(row) -%}<span class="nodetype">[Row]</span>{%- endcall %}
+{%- call heading(row) -%}<span class="nodetype">[Row]</span>{%- endcall %}
 <dl>
   {%- for field, value in row|parse_row-%}
   <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
@@ -156,7 +162,7 @@
 
 {# table column #}
   {% for cnode in node.iterfind("row/column") -%}
-  {%- call heading(cnode) -%}<span class="nodetype">[Column]</span>{%- endcall %}
+  {% call heading(cnode,false) -%}<span class="oid">{{ cnode.get("oid")|short_oid }}{{ suffix }}</span><span class="nodetype">[Column]</span>{%- endcall %}
 <dl>
   {%- for field, value in cnode|parse_scalar -%}
   <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
@@ -165,13 +171,13 @@
   {%- endfor %}
 {%- endif -%}
 {% endfor -%}
-<h1>Notifications</h1>
+{{ heading1( "Notifications" ) }}
 {{ descsection("notifications/notification", "objects/object") }}
-<h1>Groups</h1>
+{{ heading1( "Groups" ) }}
 {{ descsection("groups/group", "members/member") }}
-<h1>Compliances</h1>
+{{ heading1( "Compliances" ) }}
 {{ descsection("compliances/compliance", "requires/*") }}
-<h1>Type Definitions</h1>
+{{ heading1( "Type Definitions" ) }}
 {%- for node in mib.iterfind("typedefs/typedef") %}
 {{ heading(node, showoid=false) }}
 <dl>
@@ -180,7 +186,7 @@
   {%- endfor %}
 </dl>
 {% endfor %}
-<h1>Imports</h1>
+{{ heading1( "Imports" ) }}
 <table id="imports" class="main">
     <thead>
         <th>#</th>
@@ -195,6 +201,14 @@
 </table>
 
 </div><!-- main-content -->
+<div class="yui3-u" id="nav">
+<span id="navtitle">Table of Index</span>
+<ul class="nav">
+{% for n, lnk in navitable %}
+<li><a href="#{{ lnk }}">{{ n }}</a></li>
+{%- endfor %}
+</ul>
+</div>
 </div><!-- layout -->
 </body>
 </html>
