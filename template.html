@@ -190,7 +190,7 @@
     </thead>
     <tbody>
 {%- for node in mib.findall("./imports/import") -%}
-<tr><td>{{ loop.index }}</td><td>{{ node.get("name") }}</td><td>{{ node.get("module") }}</td></tr>
+<tr><td>{{ anchor( node.get("name")) }}{{ loop.index }}</td><td>{{ node.get("name") }}</td><td>{{ node.get("module") }}</td></tr>
 {% endfor %}
 </tbody>
 </table>

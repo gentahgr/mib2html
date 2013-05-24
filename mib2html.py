@@ -111,6 +111,12 @@ def build_index(dom):
         name = node.get("name")
         result[name] = (u"0",node)
 
+    for node in dom.iterfind(u"imports/import"):
+        # exclude standard SMIv2 imports
+        if node.get(u"module") not in [u"SNMPv2-SMI", u"SNMPv2-TC"]:
+            name = node.get(u"name")
+            result[name] = (u"0",node)
+
     return result
 
 def build_mib_node_array(dom):
