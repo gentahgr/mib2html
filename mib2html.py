@@ -324,7 +324,7 @@ def fl_parse_typedef(typetag):
     result.append( (u"status", typetag.get(u"status", u"current")))
 
     # other information
-    for fields in [u"default", u"format", u"units", u"description", u"referene" ]:
+    for fields in [u"default", u"format", u"units", u"description", u"reference" ]:
         value = typetag.findtext(fields)
         if value is not None:
             result.append( (fields, value) )
@@ -371,7 +371,7 @@ def fl_parse_scalar(node):
     result.append( (u"status", node.get(u"status", u"current")))
 
     # other information
-    for fields in [u"access", u"default", u"format", u"units", u"description", u"referene" ]:
+    for fields in [u"access", u"default", u"format", u"units", u"description", u"reference" ]:
         value = node.findtext(fields)
         if value is not None:
             result.append( (fields, value) )
@@ -393,7 +393,7 @@ def fl_parse_row(node):
         (u"status", node.get(u"status", u"current"))
         (u"create", node.get(u"create", u"true"))
         ]
-    for fields in [ u"description", u"referene" ]:
+    for fields in [ u"description", u"reference" ]:
         value = node.findtext(fields)
         if value is not None:
             result.append( (fields, value) )
