@@ -19,15 +19,15 @@
 {%- endif -%}
 </span>
 {%- endfor -%}
-</{{tag}}><{{tag}}>{{ n.get("name") }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}{{ oid_suffix }}</{{tag}}>
+</{{tag}}><{{tag}}>{{ n.get("name")|l }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}{{ oid_suffix }}</{{tag}}>
 {%- set desc = n.find("description") %}
 <{{tag}} class="mib_desc">{{ desc.text|truncate(120) }}</{{tag}}>
-<{{tag}}>{{ syntax }}</{{tag}}>
+<{{tag}}>{{ syntax|l }}</{{tag}}>
 {%- endmacro %}
 {%- macro build_name_list(obj_list) -%}
     {%- set objs = [] -%}
     {%- for obj in obj_list -%}
-      {%- set dummy = objs.append( obj.get("name")) -%}
+      {%- set dummy = objs.append( obj.get("name") ) -%}
     {%- endfor -%}
     {{ objs|join(", ") }}
 {%- endmacro -%}
@@ -86,9 +86,19 @@
 </tbody>
 </table>
 
+{%- macro anchor(name) -%}
+<a name="l_{{name}}"></a>
+{%- endmacro -%}
+
+{%- macro heading(node,showoid=true) -%}
+<h2 class="nodename">{{ anchor( node.get("name")) }}{{ node.get("name") }}
+{%- if showoid %} <span class="oid">{{ node.get("oid")|short_oid }}</span>{% endif %}
+{%- if caller %}{{ caller() }}{%- endif %}</h2>
+{%- endmacro -%}
+
 {%- macro descsection(nodes,children) -%}
 {%- for node in mib.iterfind(nodes) %}
-<h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span></h2>
+{{ heading(node) }}
 <dl>
 <dt>oid</dt>
 <dd>{{ node.get("oid") }}</dd>
@@ -107,14 +117,14 @@
 <h1>Nodes</h1>
 {%- for node in mib.iterfind("nodes/*") %}
 {%- if node.tag == "scalar" -%}
-<h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Value]</span></h2>
+{% call heading(node) -%}<span class="nodetype">[Value]</span>{%- endcall %}
 <dl>
   {%- for field, value in node|parse_scalar -%}
   <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
   {%- endfor %}
 </dl>
 {%- elif node.tag == "table" -%}
-<h2 class="nodename">{{ node.get("name") }} <span class="oid">{{ node.get("oid")|short_oid }}</span> <span class="nodetype">[Table]</span></h2>
+{% call heading(node) -%}<span class="nodetype">[Table]</span>{%- endcall %}
 <dl>
   {%- for field, value in node|parse_table -%}
   <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
@@ -137,7 +147,7 @@
 {# table row #}
 {%- set row = node.find("row") -%}
 {%- set suffix = row|linkage_suffix -%}
-<h2 class="nodename">{{ row.get("name") }} <span class="oid">{{ row.get("oid")|short_oid }}</span> <span class="nodetype">[Row]</span></h2>
+{% call heading(row) -%}<span class="nodetype">[Row]</span>{%- endcall %}
 <dl>
   {%- for field, value in row|parse_row-%}
   <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
@@ -146,7 +156,7 @@
 
 {# table column #}
   {% for cnode in node.iterfind("row/column") -%}
-<h2 class="nodename">{{ cnode.get("name") }} <span class="oid">{{ cnode.get("oid")|short_oid }}{{ suffix }}</span> <span class="nodetype">[Column]</span></h2>
+  {%- call heading(cnode) -%}<span class="nodetype">[Column]</span>{%- endcall %}
 <dl>
   {%- for field, value in cnode|parse_scalar -%}
   <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
@@ -163,7 +173,7 @@
 {{ descsection("compliances/compliance", "requires/*") }}
 <h1>Type Definitions</h1>
 {%- for node in mib.iterfind("typedefs/typedef") %}
-<h2 class="nodename">{{ node.get("name") }}</span></h2>
+{{ heading(node, showoid=false) }}
 <dl>
   {%- for field, value in node|parse_typedef -%}
   <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>

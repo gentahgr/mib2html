@@ -51,6 +51,7 @@ from xml.etree import ElementTree as et
 import jinja2
 from jinja2.utils import Markup
 from itertools import count, izip
+import re
 import sys
 
 # Common exception
@@ -104,6 +105,11 @@ def build_index(dom):
         name = node.get("name")
         # result[oid] = (name,node)
         result[name] = (oid,node)
+
+    # add Textual Convention name with dummy oid
+    for node in dom.iterfind("typedefs/typedef"):
+        name = node.get("name")
+        result[name] = (u"0",node)
 
     return result
 
@@ -195,10 +201,10 @@ def prepare_context(mib):
     root_oid_prefix = u".".join(root_oidlist) + "."
 
     return {
-            u"mib": mib,
-            u"root": root_oid,
-            u"root_name": root_name,
-            u"index": mib_index,
+            u"mib": mib,             # ElementTree
+            u"root": root_oid,       # string
+            u"root_name": root_name, # string
+            u"index": mib_index,     # string -> (string{oid}, Element{node} )
             u"tree_index": ttree,
             u"oid_prefix_level": oid_prefix_level,
             u"mib_array": mib_array,
@@ -218,6 +224,7 @@ def prepare_filters():
             u"parse_table":     fl_parse_table,
             u"parse_table_toc": fl_parse_table_toc,
             u"parse_row":       fl_parse_row,
+            u"l":               fl_hyperlink,
             }
             
 
@@ -260,13 +267,6 @@ def fl_format_syntax(node):
         return types[0][1]
     else:
         raise InvalidMibError("syntax for {} has no type or typedef node".format(node.get("name")))
-
-'''
-                if is_local(mod_name):
-                   result.append(TagString(basetype,"typedef",mod_name))
-                else:
-                   result.append(TagString(basetype,"import",mod_name))
-'''
 
 def fl_parse_typedef(typetag):
     '''Parse "typedef" node
@@ -563,7 +563,47 @@ def fl_linkage_suffix(row):
     # print >>sys.stderr, "Linkages: {}, {}".format(row.get("name"),len(linkages))
     return create_oid_suffix_str(len(linkages))
 
-def fl_format_description(desc_str):
+_re_hyperlink_target = re.compile( r"[A-Za-z_][0-9A-Za-z_]*" )
+
+@jinja2.contextfilter
+def fl_hyperlink(ctx, in_str):
+    """
+    Add intra-file hyperlink for identifier
+
+    Hyperlink_name : l_<name_of_identifier>
+    e.g. abcDefGhi => l_abcDefGhi
+
+    input:
+        ctx : context
+        index : hyperlnk
+
+    return:
+        Markup string
+
+    """
+    lookup = ctx.parent[u"index"]
+
+    result = []
+    current_pos = 0 # position of the last processed string
+    match_result = _re_hyperlink_target.search(in_str, current_pos)
+    while match_result:
+        start_p = match_result.start()
+        end_p   = match_result.end()
+        if in_str[start_p:end_p] in lookup:
+            # create hyperlink
+            result.append( in_str[current_pos:start_p] )
+            result.append( Markup(u'<a href="#l_{0}">{0}</a>' ).format( in_str[start_p:end_p] ))
+            current_pos = end_p
+
+        # next search from the last match position
+        match_result = _re_hyperlink_target.search( in_str, end_p )
+
+    result.append( in_str[current_pos:] )
+    return Markup(u"").join( result )
+
+
+@jinja2.contextfilter
+def fl_format_description(ctx, desc_str, chain=fl_hyperlink):
     """Format description in SMIv2 MIB file for HTML output
     Type of result is Markup instead of string in order to avoid auto-escape.
 
@@ -577,7 +617,7 @@ def fl_format_description(desc_str):
     # print >>sys.stderr, mline
     # print >>sys.stderr, "mline={}, len={}\n".format( len(mline), len(desc_str))
     if len(mline) == 1:
-        return mline[0]
+        return chain(ctx, mline[0])
 
     def paragraph(lines):
         ll = []
@@ -592,8 +632,7 @@ def fl_format_description(desc_str):
             yield u" ".join( ll )
         
     # multiline
-    return Markup(u"").join( [ Markup( u"<p>{}</p>\n" ).format( para ) for para in paragraph( mline ) ] )
-
+    return Markup(u"").join( [ Markup( u"<p>{}</p>\n" ).format( chain( ctx, para )) for para in paragraph( mline ) ] )
 
 if __name__ == '__main__':
     def main():
