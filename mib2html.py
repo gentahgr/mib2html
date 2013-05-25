@@ -616,15 +616,20 @@ def fl_format_description(ctx, desc_str, chain=fl_hyperlink):
         for l in lines:
             if l == "":
                 if len(ll) > 0:
-                    yield u" ".join( ll )
+                    yield ll
                 ll = []
             else:
                 ll.append( l )
         if len(ll) > 0:
-            yield u" ".join( ll )
+            yield ll
         
     # multiline
-    return Markup(u"").join( [ Markup( u"<p>{}</p>\n" ).format( chain( ctx, para )) for para in paragraph( mline ) ] )
+    return Markup(u"").join(
+            [ Markup( u"<p>{}</p>\n" ).format( 
+                Markup(u"<br />").join(
+                [ chain( ctx, line ) for line in para ] ))
+                for para in paragraph( mline )
+            ])
 
 if __name__ == '__main__':
     def main():

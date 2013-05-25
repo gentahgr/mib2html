@@ -9,7 +9,7 @@
 ? テーブル出力方法の見直し
 - accessを出力できるか検討
 * descriptionの整形
-  - 改行を維持する
+  * 改行を維持する
 * descriptionをはみ出させて，表の高さを揃える
 * tableのoidにindexを付与する
 * typedefの対応
