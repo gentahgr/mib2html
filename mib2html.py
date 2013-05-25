@@ -633,7 +633,7 @@ def fl_format_description(ctx, desc_str, chain=fl_hyperlink):
 
 if __name__ == '__main__':
     def main():
-        import sys
+        import textwrap
         if len(sys.argv) < 2:
             print >> sys.stderr, "usage: {} mib_xml.xml".format( sys.argv[0] )
             return 2
@@ -644,6 +644,19 @@ if __name__ == '__main__':
         except (IOError):
             print >> sys.stderr, "Failed to open XML file: {}".format(filename)
             return 1
+
+        except et.ParseError as e:
+            print >> sys.stderr, textwrap.dedent( """\
+            Parse Error : {}
+            This tool accept xml-formatted MIB file translated from MIB(SMI) file.
+
+            How to generate xml file from MIB file
+            $ smidump -f xml MIB_FILE > MIB.xml
+
+            smidump command is available as a part of libsmi
+            http://www.ibr.cs.tu-bs.de/projects/libsmi/
+            """ ).format(e.message)
+            return 3
 
         try:
             # prepare
@@ -657,7 +670,8 @@ if __name__ == '__main__':
 
         except InvalidMibError as e :
             print >> sys.stderr, "MIB XML is invalid: {}".format(e.message)
+            return 5
 
-
+        return 0
         
-    main()
+    sys.exit( main())
