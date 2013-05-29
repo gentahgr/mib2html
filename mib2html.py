@@ -331,7 +331,6 @@ def fl_parse_scalar(node):
         list of tuple
         [ (param1, value1), (param2, value2),...]
         most significant elemnt shall be the fist element of the list.
-        The value of the first element is shown for short-form.
     exception:
         TypeError: if XML element type is not "typedef"
         InvalidMibError : if scalar node has no syntax
@@ -378,7 +377,6 @@ def fl_parse_row(node):
         list of tuple
         [ (param1, value1), (param2, value2),...]
         most significant elemnt shall be the fist element of the list.
-        The value of the first element is shown for short-form.
     """
     result = [
         (u"oid", node.get(u"oid")),
@@ -464,7 +462,6 @@ def fl_parse_row(node):
         list of tuple
         [ (param1, value1), (param2, value2),...]
         most significant elemnt shall be the fist element of the list.
-        The value of the first element is shown for short-form.
     """
     result = [
         (u"oid", node.get(u"oid")),
