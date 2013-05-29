@@ -16,6 +16,8 @@
 * 説明部の対応
   * scalar
   * table
+- 表への区分の追加
+- 表の列幅の最適化: descriptionが狭すぎる
 
 ====
 - XMLでない入力だったら，smidumpを呼ぶ
@@ -24,4 +26,9 @@
 ===
 - 文字列を全てunicodeに u"", ur"" : docstringを除く
 - unittest
+
+===
+Installation & Packaging
+- pip
+- css同時出力
 
