@@ -10,6 +10,7 @@
 {{ s }}
 {%- endfor %}
 {% endmacro %}
+{%- set nodetype1 = { "node": "", "scalar": "Type", "table": "", "row": "Index", "column": "Type", "notification": "v2Trap", "group": "Grp", "compliance": "Comp." } -%}
 {% macro draw_row(n,tag="td",syntax="", oid_suffix="") -%}
 <{{tag}} class="mib_indent">
 {%- for i in n.get("oid")|calc_indent -%}
@@ -19,10 +20,11 @@
 {%- endif -%}
 </span>
 {%- endfor -%}
-</{{tag}}><{{tag}}>{{ n.get("name")|l }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}{{ oid_suffix }}</{{tag}}>
+</{{tag}}><{{tag}}>{{ n.get("name")|l }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}<wbr/>{{ oid_suffix }}</{{tag}}>
 {%- set desc = n.find("description") %}
-<{{tag}} class="mib_desc">{{ desc.text|truncate(120) }}</{{tag}}>
-<{{tag}}>{{ syntax|l }}</{{tag}}>
+<{{tag}} class="t_snt">{{ nodetype1[n.tag] }}</{{tag}}>
+<{{tag}} class="t_syn">{{ syntax|l }}</{{tag}}>
+<{{tag}} class="t_desc">{{ desc.text|truncate(120) }}</{{tag}}>
 {%- endmacro %}
 {%- macro build_name_list(obj_list) -%}
     {%- set objs = [] -%}
@@ -54,11 +56,11 @@
 {{ heading1("Main MIB Tree") }}
 <table id="nodes" class="main">
     <thead>
-        <th style="width: 6em">1234567890</th>
+        <th class="hidden">1234567890</th>
         <th>Name</th>
         <th>oid</th>
-        <th>description</th>
-        <th>syntax</th>
+        <th colspan="2">syntax / index</th>
+        <th width="30%">description</th>
     </thead>
     <tbody>
     {%- for oid_t, node in mib_array %}

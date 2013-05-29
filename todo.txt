@@ -16,8 +16,8 @@
 * 説明部の対応
   * scalar
   * table
-- 表への区分の追加
-- 表の列幅の最適化: descriptionが狭すぎる
+* 表への区分の追加
+* 表の列幅の最適化: descriptionが狭すぎる
 
 ====
 - XMLでない入力だったら，smidumpを呼ぶ

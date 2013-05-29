@@ -76,14 +76,20 @@ a {
 
 
 .main {
-    table-layout: fixed;
+    table-layout: auto;
     font-size: 85%;
     height: 100%;
 }
 .main th {
     background-color: #1531AE;
     color: white;
+    text-align: left;
 }
+
+.main th.hidden {
+    color: #1531AE;
+}
+
 .main tr {
     border: 1px solid gray;
 }
@@ -91,12 +97,25 @@ a {
     vertical-align: top;
     height: 100%;
 }
-.mib_desc {
+
+
+.t_desc {
+    font-size: 85%;
+    border-left: 1px dotted lightgray;
+}
+
+.t_syn {
     font-size: 85%;
 }
 
-.mib_indent {
-    width: 6em;
+.t_snt {
+    font-size: 85%;
+    font-style: italic;
+    border-left: 1px dotted lightgray;
+}
+
+.t_indent {
+    width: 10em;
 }
 
 .tree_pattern0 {
