@@ -23,7 +23,9 @@
 
 ====
 - XMLでない入力だったら，smidumpを呼ぶ
-- 
+- smi parserの組み込み
+  https://code.google.com/p/pycopia/ : libsmi wrapper
+  http://www.pycopia.net/
 
 ===
 - 文字列を全てunicodeに u"", ur"" : docstringを除く
