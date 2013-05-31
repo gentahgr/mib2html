@@ -19,6 +19,8 @@
 * 表への区分の追加
 * 表の列幅の最適化: descriptionが狭すぎる
 
+* ライセンスの追加
+
 ====
 - XMLでない入力だったら，smidumpを呼ぶ
 - 
@@ -32,3 +34,6 @@ Installation & Packaging
 - pip
 - css同時出力
 
+setuptools
+https://pypi.python.org/pypi/setuptools
+http://peak.telecommunity.com/DevCenter/PkgResources
