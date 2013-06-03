@@ -651,47 +651,47 @@ def fl_format_description(ctx, desc_str, chain=fl_hyperlink):
                 for para in paragraph( mline )
             ])
 
+def main():
+    import textwrap
+    if len(sys.argv) < 2:
+        print >> sys.stderr, "usage: {} mib_xml.xml".format( sys.argv[0] )
+        return 2
+    filename = sys.argv[1]
+
+    try:
+        mib = read_mib_xml(filename)
+    except (IOError):
+        print >> sys.stderr, "Failed to open XML file: {}".format(filename)
+        return 1
+
+    except et.ParseError as e:
+        print >> sys.stderr, textwrap.dedent( """\
+        Parse Error : {}
+        This tool accept xml-formatted MIB file translated from MIB(SMI) file.
+
+        How to generate xml file from MIB file
+        $ smidump -f xml MIB_FILE > MIB.xml
+
+        smidump command is available as a part of libsmi
+        http://www.ibr.cs.tu-bs.de/projects/libsmi/
+        """ ).format(e.message)
+        return 3
+
+    try:
+        # prepare
+
+        template_env = jinja2.Environment(autoescape=True,loader=jinja2.FileSystemLoader("."))
+        for key, func in prepare_filters().iteritems():
+            template_env.filters[ key ] = func
+
+        template = template_env.get_template("template.html")
+        print template.render(**(prepare_context(mib)) )
+
+    except InvalidMibError as e :
+        print >> sys.stderr, "MIB XML is invalid: {}".format(e.message)
+        return 5
+
+    return 0
+    
 if __name__ == '__main__':
-    def main():
-        import textwrap
-        if len(sys.argv) < 2:
-            print >> sys.stderr, "usage: {} mib_xml.xml".format( sys.argv[0] )
-            return 2
-        filename = sys.argv[1]
-
-        try:
-            mib = read_mib_xml(filename)
-        except (IOError):
-            print >> sys.stderr, "Failed to open XML file: {}".format(filename)
-            return 1
-
-        except et.ParseError as e:
-            print >> sys.stderr, textwrap.dedent( """\
-            Parse Error : {}
-            This tool accept xml-formatted MIB file translated from MIB(SMI) file.
-
-            How to generate xml file from MIB file
-            $ smidump -f xml MIB_FILE > MIB.xml
-
-            smidump command is available as a part of libsmi
-            http://www.ibr.cs.tu-bs.de/projects/libsmi/
-            """ ).format(e.message)
-            return 3
-
-        try:
-            # prepare
-
-            template_env = jinja2.Environment(autoescape=True,loader=jinja2.FileSystemLoader("."))
-            for key, func in prepare_filters().iteritems():
-                template_env.filters[ key ] = func
-
-            template = template_env.get_template("template.html")
-            print template.render(**(prepare_context(mib)) )
-
-        except InvalidMibError as e :
-            print >> sys.stderr, "MIB XML is invalid: {}".format(e.message)
-            return 5
-
-        return 0
-        
     sys.exit( main())
