@@ -15,8 +15,9 @@ setup(name=package_name,
       license = 'MIT License',
       url ='TO BE DETERMINED',
       packages = [ package_name ],
-      package_data = { '' : ['*.html', '*.css' ]},
-      exclude_package_data = { '': 'todo.txt' },
+      package_data = { package_name : ['*.html', '*.css' ]},
+      include_package_data=True,
+      # exclude_package_data = { '': 'todo.txt' },
       install_requires = [ 'jinja2 >= 2.6' ],
       entry_points = {
           "console_scripts" : [
