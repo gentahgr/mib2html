@@ -680,7 +680,7 @@ def main():
     try:
         # prepare
 
-        template_env = jinja2.Environment(autoescape=True,loader=jinja2.FileSystemLoader("."))
+        template_env = jinja2.Environment(autoescape=True,loader=jinja2.PackageLoader(__name__, package_path="."))
         for key, func in prepare_filters().iteritems():
             template_env.filters[ key ] = func
 
