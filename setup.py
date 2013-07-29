@@ -8,7 +8,7 @@ except ImportError:
 package_name = 'mib2html'
 
 setup(name=package_name,
-      version='0.1',
+      version='0.2',
       description='Pretty html generation from MIB definition',
       author='Gentaro Muramatsu',
       author_email='genta.hgr@gmail.com',
@@ -21,7 +21,7 @@ setup(name=package_name,
       install_requires = [ 'jinja2 >= 2.6' ],
       entry_points = {
           "console_scripts" : [
-              "mib2html_entry = mib2html:main"
+              "mib2html = mib2html:main"
               ]
           }
      )
