@@ -35,7 +35,11 @@ Enable virtual environment.
 
   $ . venv/bin/activate
 
-Note: activate is not executable because it shall be parsed in the current shell.
+  See virtualenv_ for details.
+
+.. _virtualenv: https://pypi.python.org/pypi/virtualenv
+
+:Note: activate is not executable because it shall be parsed in the current shell.
 
 Regiter packages into python
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -66,4 +70,8 @@ convet this file into html
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   $ rst2html.py dev_environment.rst > dev_environment.html
+
+  See restructuredText_ for notation.
+
+.. _restructuredText: http://www.planewave.org/translations/rst/quickref.html
 
