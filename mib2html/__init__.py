@@ -187,9 +187,9 @@ def build_tree_index(dom,root):
     return (rootlevel, ttree)
 
 
-def find_root(dom,index):
-    """find base oid
-    return root node name
+def find_identity(dom,index):
+    """find identity name
+    return identity name
 
     input:
         dom: mib (ElementTree)
@@ -221,18 +221,23 @@ def prepare_context(mib):
 
     # build various indicies from mib(xml ElementTree)
     mib_index = build_index(mib)
-    root_name = find_root(mib, mib_index)
-    root_oid  = mib_index[root_name][0]
     mib_array = build_mib_node_array(mib)
-    oid_prefix_level, ttree = build_tree_index(mib, root_oid)
 
+    identity_name = find_identity(mib, mib_index)
+    identity_oid  = mib_index[identity_name][0]
+
+    root_oid  = ".".join( [ str(i) for i in min( mib_array[0][0], oid_str2tuple( identity_oid )) ])
     root_oidlist = root_oid.split(u".")[:-1]
     root_oid_prefix = u".".join(root_oidlist) + "."
+
+    oid_prefix_level, ttree = build_tree_index(mib, root_oid)
+
 
     return {
             u"mib": mib,             # ElementTree
             u"root": root_oid,       # string
-            u"root_name": root_name, # string
+            u"identity": identity_oid,       # string
+            u"identity_name": identity_name, # string
             u"index": mib_index,     # string -> (string{oid}, Element{node} )
             u"tree_index": ttree,
             u"oid_prefix_level": oid_prefix_level,
