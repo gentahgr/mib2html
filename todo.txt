@@ -20,6 +20,8 @@
 * 表の列幅の最適化: descriptionが狭すぎる
 
 * ライセンスの追加
+root_node レベルの自動調整
+root_node レベルの手動調整(commandline option追加)
 
 ====
 - XMLでない入力だったら，smidumpを呼ぶ
