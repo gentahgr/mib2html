@@ -1,0 +1,6 @@
+/build/
+/dist/
+/work/
+/venv/
+/mib2html.egg-info/
+*.pyc
