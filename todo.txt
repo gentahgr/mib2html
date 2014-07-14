@@ -24,12 +24,8 @@ Legend
 * 表の列幅の最適化: descriptionが狭すぎる
 
 * ライセンスの追加
-root_node レベルの自動調整
-root_node レベルの手動調整(commandline option追加)
-    --rootlevel=top: 最も浅いところをベースにする
-    --rootlevel=identity: identity oidをベースにする(default)
-    --rootlevel=0(-9): 最も浅いところからの深さで，レベルを手動設定する．
-
+* root_node レベルの選択オプション
+  * -r 最も浅いところをベースにする (option無しの時はidentity oid)
 
 ====
 - XMLでない入力だったら，smidumpを呼ぶ
