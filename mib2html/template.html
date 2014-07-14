@@ -41,11 +41,10 @@
 <h1><a name="{{ linkname }}"></a>{{ name }}</h1>
 {%- set dummy = navitable.append( (name, linkname) ) -%}
 {%- endmacro -%}
-<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.17.2/build/cssnormalize/cssnormalize-min.css">
-<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.17.2/build/cssgrids/cssgrids-min.css">
-<!-- <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.10.0/build/cssgrids-responsive/cssgrids-responsive-min.css"> -->
+{# <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.17.2/cssnormalize/cssnormalize-min.css&3.17.2/cssgrids/cssgrids-min.css"> #}
 {# <link rel="stylesheet" type="text/css" href="mibstyle.css"> #}
 <style>
+{% include "yui-3.17.2-cssnormalize-cssgrids-min.css" %}
 {% include "mibstyle.css" %}
 </style>
 <title>{{ module_name }}</title>
