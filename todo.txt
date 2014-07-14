@@ -41,6 +41,7 @@ Legend
 Installation & Packaging
 - pip
 - css同時出力
+  * embed css (original & YUI)
 
 setuptools
 https://pypi.python.org/pypi/setuptools
