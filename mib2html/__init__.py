@@ -673,6 +673,51 @@ def fl_format_description(ctx, desc_str, chain=fl_hyperlink):
                 for para in paragraph( mline )
             ])
 
+def mib2xmlpipe( mibfile ):
+    """Convert MIB file to XML and returns file handle
+
+        Return None in case of conversion failure.
+    """
+    ENV_MIB2XML = "mib2xml"
+    CMD_MIB2XML = "smidump"
+
+    # get smidump command name
+
+    import os, subprocess, shlex
+    command = os.environ[ENV_MIB2XML] if os.environ.has_key(ENV_MIB2XML) else CMD_MIB2XML
+    command_line = shlex.split( command + " -f xml ")
+    command_line.append(mibfile)
+
+    try:
+        return subprocess.Popen( command_line, stdout=subprocess.PIPE )
+
+    except OSError:
+        return None
+
+def callwithxml( filename, callback ):
+    """Prepare XML file handle for parser.
+        Just open the specified file when XML is directly given.
+        Otherwise, try conversion from MIB to XML.
+
+        callback function must take 1 argument, and accept file object and file name.
+
+        return: return type of the callback function
+        dependency: environment variable MIB2XMLTOOL override default 'smidump'.
+    """
+
+    mibp = None
+
+    if not filename.endswith( ".xml" ):
+        # assume given file is MIB
+        mibp = mib2xmlpipe(filename)
+        if mibp != None:
+            try:
+                return callback( mibp.stdout )
+            finally:
+                mibp.poll()
+
+    return callback( filename )
+
 def main():
     import textwrap
     parser = build_argparser()
@@ -685,7 +730,8 @@ def main():
     filename = options.mibxml
 
     try:
-        mib = read_mib_xml(filename)
+        mib = callwithxml( filename, read_mib_xml)
+        # mib = read_mib_xml(filename)
     except (IOError):
         print >> sys.stderr, "Failed to open XML file: {}".format(filename)
         return 1
@@ -693,7 +739,7 @@ def main():
     except et.ParseError as e:
         print >> sys.stderr, textwrap.dedent( """\
         Parse Error : {}
-        This tool accept xml-formatted MIB file translated from MIB(SMI) file.
+        This tool accept MIB file or xml-formatted MIB file translated from MIB(SMI) file.
 
         How to generate xml file from MIB file
         $ smidump -f xml MIB_FILE > MIB.xml
