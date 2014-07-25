@@ -741,8 +741,13 @@ def main():
         Parse Error : {}
         This tool accept MIB file or xml-formatted MIB file translated from MIB(SMI) file.
 
-        How to generate xml file from MIB file
-        $ smidump -f xml MIB_FILE > MIB.xml
+        Confirm if smidump command is in the search path
+        or explicitly specified by "mib2xml" environment variable
+        if you specified MIB file.
+
+        Confirm if specified file is valid XML format
+        compatible with smidump output
+        if you specified xml file.
 
         smidump command is available as a part of libsmi
         http://www.ibr.cs.tu-bs.de/projects/libsmi/
