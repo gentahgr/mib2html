@@ -30,7 +30,7 @@ This tool relies on the following tools.
 * [jinja2](http://jinja.pocoo.org/)
 * smidump, which is a part of [libsmi](http://www.ibr.cs.tu-bs.de/projects/libsmi/) library
 
-"libsmi" can be installed by assistance of python package sysem such as  `easy_install` or `pip`.
+"jinja2" can be installed by assistance of python package sysem such as  `easy_install` or `pip`.
 
 For MacOS X, libsmi can be installed as "libsmi" package of [Homebrew](http://brew.sh/).
 
