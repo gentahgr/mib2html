@@ -28,7 +28,7 @@ Legend
   * -r 最も浅いところをベースにする (option無しの時はidentity oid)
 
 ====
-- XMLでない入力だったら，smidumpを呼ぶ
+* XMLでない入力だったら，smidumpを呼ぶ
 - smi parserの組み込み
   https://code.google.com/p/pycopia/ : libsmi wrapper
   http://www.pycopia.net/
