@@ -8,7 +8,7 @@ except ImportError:
 package_name = 'mib2html'
 
 setup(name=package_name,
-      version='0.2',
+      version='0.3',
       description='Pretty html generation from MIB definition',
       author='Gentaro Muramatsu',
       author_email='genta.hgr@gmail.com',
