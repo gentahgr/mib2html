@@ -718,8 +718,30 @@ def callwithxml( filename, callback ):
 
     return callback( filename )
 
+def isEtree13Installed():
+    "Check if proper version of ElementTree library is installed"
+
+    from distutils.version import StrictVersion
+
+    if StrictVersion(et.VERSION) < StrictVersion('1.3.0'):
+        return False
+
+    return True
+
 def main():
+
     import textwrap
+
+    if not isEtree13Installed():
+        print >> sys.stderr, textwrap.dedent( """\
+        Error: ELementTree library is older than expected.
+
+        ElementTree 1.3 or newer, which is accompanied with Python 2.7,
+        is required.
+        """ )
+        return 31
+
+
     parser = build_argparser()
     options = parser.parse_args()
 
