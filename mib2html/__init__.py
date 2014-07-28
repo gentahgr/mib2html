@@ -258,7 +258,7 @@ def build_argparser():
 
     parser = argparse.ArgumentParser(description='Generate HTML document from MIB(SMIv2) definition')
 
-    parser.add_argument('mibxml', help='XML file converted from MIB file by smidump')
+    parser.add_argument('mibxml', help='MIB file or XML file(converted by smidump)')
     parser.add_argument('-r', dest="fromTop", help='set top oid as oid abbreviation root. Default root is identity oid', action='store_true' );
     # parser.add_argument('-s', metavar="levelshift", help='offset of root oid level (positive or negative) (default: 0)', type=int, default=0  );
     return parser
