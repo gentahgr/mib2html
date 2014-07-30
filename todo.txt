@@ -26,6 +26,11 @@ Legend
 * ライセンスの追加
 * root_node レベルの選択オプション
   * -r 最も浅いところをベースにする (option無しの時はidentity oid)
+- IEのStandard Modeでツリーの縦線がつながらない．
+- canvasを使用したツリー表示 (git/hgのバージョン表示のように)
+- webからonlineで使える簡易インタフェース (cgi?, wsgi?)
+  => Python 2.7から始まって，環境を整えるのが意外と大変なので．
+    Windowsへのインストールもしかり．
 
 ====
 * XMLでない入力だったら，smidumpを呼ぶ
