@@ -259,6 +259,7 @@ def build_argparser():
     parser = argparse.ArgumentParser(description='Generate HTML document from MIB(SMIv2) definition')
 
     parser.add_argument('mibxml', help='MIB file or XML file(converted by smidump)')
+    parser.add_argument('-k', dest="forceMibParse", help='Continue conversion forcely even when MIB error is detected (smidump option)', action='store_true')
     parser.add_argument('-r', dest="fromTop", help='set top oid as oid abbreviation root. Default root is identity oid', action='store_true' );
     # parser.add_argument('-s', metavar="levelshift", help='offset of root oid level (positive or negative) (default: 0)', type=int, default=0  );
     return parser
@@ -673,7 +674,7 @@ def fl_format_description(ctx, desc_str, chain=fl_hyperlink):
                 for para in paragraph( mline )
             ])
 
-def mib2xmlpipe( mibfile ):
+def mib2xmlpipe( mibfile, force=False ):
     """Convert MIB file to XML and returns file handle
 
         Return None in case of conversion failure.
@@ -685,7 +686,10 @@ def mib2xmlpipe( mibfile ):
 
     import os, subprocess, shlex
     command = os.environ[ENV_MIB2XML] if os.environ.has_key(ENV_MIB2XML) else CMD_MIB2XML
-    command_line = shlex.split( command + " -f xml ")
+    command += " -f xml "
+    if force:
+        command += "-k "
+    command_line = shlex.split( command )
     command_line.append(mibfile)
 
     try:
@@ -694,7 +698,7 @@ def mib2xmlpipe( mibfile ):
     except OSError:
         return None
 
-def callwithxml( filename, callback ):
+def callwithxml( filename, callback, force=False ):
     """Prepare XML file handle for parser.
         Just open the specified file when XML is directly given.
         Otherwise, try conversion from MIB to XML.
@@ -709,7 +713,7 @@ def callwithxml( filename, callback ):
 
     if not filename.endswith( ".xml" ):
         # assume given file is MIB
-        mibp = mib2xmlpipe(filename)
+        mibp = mib2xmlpipe(filename, force)
         if mibp != None:
             try:
                 return callback( mibp.stdout )
@@ -752,7 +756,7 @@ def main():
     filename = options.mibxml
 
     try:
-        mib = callwithxml( filename, read_mib_xml)
+        mib = callwithxml( filename, read_mib_xml, force=options.forceMibParse)
         # mib = read_mib_xml(filename)
     except (IOError):
         print >> sys.stderr, "Failed to open XML file: {}".format(filename)
