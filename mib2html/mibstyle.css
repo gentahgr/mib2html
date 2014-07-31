@@ -215,3 +215,13 @@ dt {
     font-style: italic;
 }
 
+/* override for printer */
+
+@media print {
+    #nav {
+        display: none;
+    }
+    thead {
+        display: table-header-group;
+    }
+}
