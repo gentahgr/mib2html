@@ -155,6 +155,7 @@
 {# table row #}
 {%- set row = node.find("row") -%}
 {%- set suffix = row|linkage_suffix -%}
+{%- set creatable = row.get("create") -%}
 {%- call heading(row) -%}<span class="nodetype">[Row]</span>{%- endcall %}
 <dl>
   {%- for field, value in row|parse_row-%}
