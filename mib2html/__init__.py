@@ -369,7 +369,33 @@ def fl_parse_typedef(typetag):
 
     return result
 
-def fl_parse_scalar(node):
+_access_cnv_table = [
+        {
+        "noaccess": "not-accessible",
+        "notifyonly": "accessible-for-notify",
+        "readonly": "read-only",
+        "readwrite": "read-write"
+        },
+        {
+        "noaccess": "not-accessible",
+        "notifyonly": "accessible-for-notify",
+        "readonly": "read-only",
+        "readwrite": "read-create"
+        }
+]
+
+def _convert_access(access, t=0):
+    """Convert access attribute in libsmi to stnadard SMIv2 style
+
+        access: access (in libsmi name)
+        t: conversion type
+            0: SMIv2 scalar/fixed row table
+            1: SMIv2 tablec(row creation)
+    """
+    return _access_cnv_table[t][access]
+
+
+def fl_parse_scalar(node,rowcreate=False):
     """parse for scalar
     input:
         node: (Element)
@@ -407,8 +433,14 @@ def fl_parse_scalar(node):
     # add attributes
     result.append( (u"status", node.get(u"status", u"current")))
 
+    # add max-access
+    value = node.findtext(u"access")
+    c_flag = 0 if rowcreate is None else 1
+    if value is not None:
+        result.append( (u"max-access", _convert_access( value, c_flag )) )
+
     # other information
-    for fields in [u"access", u"default", u"format", u"units", u"description", u"reference" ]:
+    for fields in [ u"default", u"format", u"units", u"description", u"reference" ]:
         value = node.findtext(fields)
         if value is not None:
             result.append( (fields, value) )
@@ -512,7 +544,6 @@ def fl_parse_row(node):
     result = [
         (u"oid", node.get(u"oid")),
         (u"status", node.get(u"status", u"current")),
-        (u"create", node.get(u"create", u"false"))
         ]
 
     # other information
