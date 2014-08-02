@@ -25,6 +25,8 @@
 {%- endfor -%}
 </{{tag}}><{{tag}}>{{ n.get("name")|l }}</{{tag}}><{{tag}}>{{ n.get("oid")|short_oid }}<wbr/>{{ oid_suffix }}</{{tag}}>
 {%- set desc = n.find("description") %}
+{%- set access = n.find("access") %}
+<{{tag}} class="t_snt">{{ access.text }}</{{tag}}>
 <{{tag}} class="t_snt">{{ nodetype1[n.tag] }}</{{tag}}>
 <{{tag}} class="t_syn">{{ syntax|l }}</{{tag}}>
 <{{tag}} class="t_desc">{{ desc.text|truncate(120) }}</{{tag}}>
@@ -64,6 +66,7 @@
         <th class="hidden">{{ '_' * 10 }}</th>
         <th>Name</th>
         <th>oid</th>
+        <th>access</th>
         <th colspan="2">syntax / index</th>
         <th width="30%">description</th>
     </thead>
