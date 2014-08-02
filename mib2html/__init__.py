@@ -447,29 +447,6 @@ def fl_parse_scalar(node,rowcreate=False):
 
     return result
 
-def fl_parse_row(node):
-    """parse for row
-    input:
-        node: (Element)
-    return:
-        list of tuple
-        [ (param1, value1), (param2, value2),...]
-        most significant elemnt shall be the fist element of the list.
-    """
-    result = [
-        (u"oid", node.get(u"oid")),
-        (u"status", node.get(u"status", u"current"))
-        (u"create", node.get(u"create", u"true"))
-        ]
-    for fields in [ u"description", u"reference" ]:
-        value = node.findtext(fields)
-        if value is not None:
-            result.append( (fields, value) )
-
-    return result
-
-   
-
 def fl_parse_table(node):
     """parse table #1 : description part
 
