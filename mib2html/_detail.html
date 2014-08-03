@@ -5,7 +5,7 @@
 {%- macro heading(node,showoid=true) -%}
 <h2 class="nodename">{{ anchor( node.get("name")) }}{{ node.get("name") }}
 {%- if showoid %} <span class="oid">{{ node.get("oid")|short_oid }}</span>{% endif %}
-{%- if caller %}{{ caller() }}{%- endif %}</h2>
+{%- if caller is defined %}{{ caller() }}{%- endif %}</h2>
 {%- endmacro -%}
 
 {%- macro descsection(nodes,children) -%}

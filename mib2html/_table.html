@@ -49,7 +49,7 @@
         {%- set suffix = row|linkage_suffix -%}
         {%- set create = row.get("create")|lower == "true" -%}
         {%- for col in row.iterfind("column") -%}
-        <tr class="column {{"column_first" if loop.first}} {{"column_last" if loop.last}}">{{ draw_row(col,oid_suffix=suffix, syntax=col|format_syntax, create=create) }}</tr>
+        <tr class="column {{"column_first" if loop.first else ""}} {{"column_last" if loop.last else ""}}">{{ draw_row(col,oid_suffix=suffix, syntax=col|format_syntax, create=create) }}</tr>
         {%- endfor -%}
         {%- elif node.tag == 'notification' -%}
         <tr class="{{ node.tag }}">{{ draw_row(node,syntax=build_name_list(node.iterfind("./objects/object" ))) }}</tr>

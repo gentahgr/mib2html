@@ -10,5 +10,6 @@
 
 {% macro draw_column(n,args) -%}
 {%- set desc = n.find("description") %}
-<td class="t_desc">{{ desc.text|truncate(120) }}</td>
+{%- set desctext = desc.text if desc is not none else "" %}
+<td class="t_desc">{{ desctext|truncate(120) }}</td>
 {%- endmacro %}
