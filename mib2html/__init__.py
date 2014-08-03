@@ -261,6 +261,7 @@ def build_argparser():
     parser.add_argument('mibxml', help='MIB file or XML file(converted by smidump)')
     parser.add_argument('-k', dest="forceMibParse", help='Continue conversion forcely even when MIB error is detected (smidump option)', action='store_true')
     parser.add_argument('-r', dest="fromTop", help='set top oid as oid abbreviation root. Default root is identity oid', action='store_true' );
+    parser.add_argument('-D', dest="templateException", help='Change behavior for undefined object in tempates (For template debugging only)', choices=['normal', 'debug', 'strict' ])
     # parser.add_argument('-s', metavar="levelshift", help='offset of root oid level (positive or negative) (default: 0)', type=int, default=0  );
     return parser
 
@@ -790,7 +791,15 @@ def main():
 
     try:
         # prepare
-        template_env = jinja2.Environment(autoescape=True,loader=jinja2.PackageLoader(__name__, package_path=""))
+        undefinedPolicy = jinja2.Undefined
+        if options.templateException == "strict":
+            undefinedPolicy = jinja2.StrictUndefined
+        elif options.templateException == "debug":
+            undefinedPolicy = jinja2.DebugUndefined
+
+        template_env = jinja2.Environment(autoescape=True,
+                loader=jinja2.PackageLoader(__name__, package_path=""),
+                undefined=undefinedPolicy)
         for key, func in prepare_filters().iteritems():
             template_env.filters[ key ] = func
 
