@@ -1,0 +1,16 @@
+{#
+  Macro for table column drawing
+
+  syntax column
+#}
+
+{%- set nodetype1 = { "node": "", "scalar": "Type", "table": "", "row": "Index", "column": "Type", "notification": "v2Trap", "group": "Grp", "compliance": "Comp." } -%}
+
+{% macro draw_header() -%}
+<th colspan="2">syntax / index</th>
+{%- endmacro %}
+
+{% macro draw_column(n,args) -%}
+{%- set syntax = args.syntax|default('') -%}
+<td class="t_snt">{{ nodetype1[n.tag] }}</td><td class="t_syn">{{ syntax|l }}</td>
+{%- endmacro %}

@@ -1,0 +1,14 @@
+{#
+  Macro for table column drawing
+
+  oid column
+#}
+
+{% macro draw_header() -%}
+<th>oid</th>
+{%- endmacro %}
+
+{% macro draw_column(n,args) -%}
+{%- set oid_suffix = args.oid_suffix|default('') -%}
+<td>{{ n.get("oid")|short_oid }}<wbr/>{{ oid_suffix }}</td>
+{%- endmacro %}

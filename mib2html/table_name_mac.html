@@ -1,0 +1,13 @@
+{#
+  Macro for table column drawing
+
+  Name column
+#}
+
+{% macro draw_header() -%}
+<th>Name</th>
+{%- endmacro %}
+
+{% macro draw_column(n,args) -%}
+<td>{{ n.get("name")|l }}</td>
+{%- endmacro %}

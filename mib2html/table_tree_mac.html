@@ -1,0 +1,23 @@
+{#
+  Macro for table column drawing
+
+  MIB tree column
+#}
+
+{% macro draw_header() -%}
+<th class="hidden">{{ '_' * 10 }}</th>
+{%- endmacro %}
+
+{% macro draw_column(n,args) -%}
+<td class="mib_indent">
+{%- for i in n.get("oid")|calc_indent -%}
+<span class="tree_pattern{{i}}">
+{%- if i >= 2 -%}
+<span class="tree_hline"> </span>
+{%- else -%}
+&nbsp;
+{%- endif -%}
+</span>
+{%- endfor -%}
+</td>
+{%- endmacro %}

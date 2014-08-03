@@ -1,0 +1,65 @@
+{%- import "table_tree_mac.html" as ttree with context -%}
+{%- import "table_name_mac.html" as tname with context -%}
+{%- import "table_oid_mac.html"  as toid with context -%}
+{%- import "table_syntax_mac.html"  as tsyn with context -%}
+{%- import "table_access_mac.html"  as tacc with context -%}
+{%- import "table_description_mac.html"  as tdesc with context -%}
+
+{%- set columns = columns|default([ ttree, tname, toid, tacc, tsyn, tdesc ]) -%}
+
+{%- macro draw_row(n,tag="td",syntax="", oid_suffix="", create=false) -%}
+{%- set args = {
+    'tag': tag,
+    'syntax': syntax,
+    'oid_suffix': oid_suffix,
+    'create': create
+    } -%}
+{%- for c in columns -%}
+{{ c.draw_column( n, args ) }}
+{%- endfor -%}
+{%- endmacro -%}
+
+{%- macro draw_table_header() -%}
+<thead>
+{%- for c in columns -%}
+{{ c.draw_header() }}
+{%- endfor -%}
+</thead>
+{%- endmacro -%}
+
+{%- macro build_name_list(obj_list) -%}
+    {%- set objs = [] -%}
+    {%- for obj in obj_list -%}
+      {%- set dummy = objs.append( obj.get("name") ) -%}
+    {%- endfor -%}
+    {{ objs|join(", ") }}
+{%- endmacro -%}
+<table id="nodes" class="main">
+    {{ draw_table_header() }}
+    <tbody>
+    {%- for oid_t, node in mib_array %}
+        {%- if node.tag == 'scalar' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node, syntax=node|format_syntax) }}</tr>
+        {%- elif node.tag == 'node' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node) }}</tr>
+        {% elif node.tag == 'table' %}
+        <tr class="{{ node.tag }}">{{ draw_row(node) }}</tr>
+        {%- set row = node.find("row") -%}
+        <tr class="row">{{ draw_row(row, syntax=build_name_list(row.iterfind("./linkage/*" ))) }}</tr>
+        {%- set suffix = row|linkage_suffix -%}
+        {%- set create = row.get("create")|lower == "true" -%}
+        {%- for col in row.iterfind("column") -%}
+        <tr class="column {{"column_first" if loop.first}} {{"column_last" if loop.last}}">{{ draw_row(col,oid_suffix=suffix, syntax=col|format_syntax, create=create) }}</tr>
+        {%- endfor -%}
+        {%- elif node.tag == 'notification' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node,syntax=build_name_list(node.iterfind("./objects/object" ))) }}</tr>
+        {%- elif node.tag == 'group' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node,syntax=build_name_list(node.iterfind("./members/member" ))) }}</tr>
+        {%- elif node.tag == 'compliance' -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node,syntax=build_name_list(node.iterfind("./requires/*" ))) }}</tr>
+        {%- else -%}
+        <tr class="{{ node.tag }}">{{ draw_row(node,syntax="under construction") }}</tr>
+        {%- endif -%}
+    {%- endfor %}
+</tbody>
+</table>

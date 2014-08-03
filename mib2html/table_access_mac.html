@@ -1,0 +1,34 @@
+{#
+  Macro for table column drawing
+
+  MAX-ACCESS column
+#}
+
+{# access name #}
+{% set maxaccess = {
+        "noaccess": "not-accessible",
+        "notifyonly": "accessible-for-notify",
+        "readonly": "read-only",
+        "readwrite": "read-write"
+        } %}
+{% set maxaccess_create = {
+        "noaccess": "not-accessible",
+        "notifyonly": "accessible-for-notify",
+        "readonly": "read-only",
+        "readwrite": "read-create"
+        } %}
+
+{% macro draw_header() -%}
+<th>access</th>
+{%- endmacro %}
+
+{% macro draw_column(n,args) -%}
+{%- set access_node = n.find("access") -%}
+{%- set create = args.create|default(false) -%}
+<td class="t_snt">
+{%- if access_node is not none %}
+{%- set access = access_node.text -%}
+{{ maxaccess_create[access]|default('') if create else maxaccess[access]|default('') }}
+{%- endif -%}
+</td>
+{%- endmacro %}

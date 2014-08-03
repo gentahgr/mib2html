@@ -1,0 +1,109 @@
+{%- macro anchor(name) -%}
+<a name="l_{{name}}"></a>
+{%- endmacro -%}
+
+{%- macro heading(node,showoid=true) -%}
+<h2 class="nodename">{{ anchor( node.get("name")) }}{{ node.get("name") }}
+{%- if showoid %} <span class="oid">{{ node.get("oid")|short_oid }}</span>{% endif %}
+{%- if caller %}{{ caller() }}{%- endif %}</h2>
+{%- endmacro -%}
+
+{%- macro descsection(nodes,children) -%}
+{%- for node in mib.iterfind(nodes) -%}
+{{ heading(node) }}
+<dl>
+<dt>oid</dt>
+<dd>{{ node.get("oid") }}</dd>
+<dt>description</dt>
+<dd>{{ node.find("description").text|format_desc }}</dd>
+<dt>status</dt>
+<dd>{{ node.get("status") }}</dd>
+<dt>objects</dt>
+<dd><ol> {% for obj in node.iterfind(children) -%}
+<li>{{ obj.get("name")|l }}</li>
+{%- endfor -%}
+</ol></dd>
+</dl>
+{%- endfor -%}
+{%- endmacro -%}
+{{ heading1( "Nodes" ) }}
+{%- for node in mib.iterfind("nodes/*") %}
+{%- if node.tag == "scalar" -%}
+{% call heading(node) -%}<span class="nodetype">[Value]</span>{%- endcall %}
+<dl>
+  {%- for field, value in node|parse_scalar -%}
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
+  {%- endfor %}
+</dl>
+{%- elif node.tag == "table" -%}
+{% call heading(node) -%}<span class="nodetype">[Table]</span>{%- endcall %}
+<dl>
+  {%- for field, value in node|parse_table -%}
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
+  {%- endfor %}
+</dl>
+<table class="main">
+<tr>
+  <th>oid</th>
+  <th>index</th>
+  <th style="width: auto">name</th>
+  <th></th>
+</tr>
+  {%- for row in node|parse_table_toc -%}<tr>
+    <td>{{ row[0] }}</td>
+    <td>{{ "" if row[1] == 0 else row[1]}}</td>
+    <td>{{ row[2]|l }}</td>
+  </tr>{%- endfor %}
+ </table>
+
+{# table row #}
+{%- set row = node.find("row") -%}
+{%- set suffix = row|linkage_suffix -%}
+{%- set creatable = row.get("create") -%}
+{%- call heading(row) -%}<span class="nodetype">[Row]</span>{%- endcall %}
+<dl>
+  {%- for field, value in row|parse_row-%}
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
+  {%- endfor %}
+</dl>
+
+{# table column #}
+  {% for cnode in node.iterfind("row/column") -%}
+  {% call heading(cnode,false) -%}<span class="oid">{{ cnode.get("oid")|short_oid }}{{ suffix }}</span><span class="nodetype">[Column]</span>{%- endcall %}
+<dl>
+  {%- for field, value in cnode|parse_scalar -%}
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
+  {%- endfor %}
+</dl>
+  {%- endfor %}
+{%- endif -%}
+{% endfor -%}
+{{ heading1( "Notifications" ) }}
+{{ descsection("notifications/notification", "objects/object") }}
+{{ heading1( "Groups" ) }}
+{{ descsection("groups/group", "members/member") }}
+{{ heading1( "Compliances" ) }}
+{{ descsection("compliances/compliance", "requires/*") }}
+{{ heading1( "Type Definitions" ) }}
+{%- for node in mib.iterfind("typedefs/typedef") %}
+{{ heading(node, showoid=false) }}
+<dl>
+  {%- for field, value in node|parse_typedef -%}
+  <dt>{{ field }}</dt><dd>{{ value|format_desc }}</dd>
+  {%- endfor %}
+</dl>
+{% endfor %}
+{{ heading1( "Imports" ) }}
+<table id="imports" class="main">
+    <thead>
+        <th>#</th>
+        <th>name</th>
+        <th>module</th>
+    </thead>
+    <tbody>
+{%- for node in mib.findall("./imports/import") -%}
+<tr><td>{{ anchor( node.get("name")) }}{{ loop.index }}</td><td>{{ node.get("name") }}</td><td>{{ node.get("module") }}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+
