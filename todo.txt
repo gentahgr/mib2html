@@ -10,8 +10,8 @@ Legend
   - typedef => Added in description part
   * compliance
 * 名前にハイパーリンクを貼る
-? テーブル出力方法の見直し
-- accessを出力できるか検討
+* テーブル出力方法の見直し
+* accessを出力できるか検討
 * descriptionの整形
   * 改行を維持する
 * descriptionをはみ出させて，表の高さを揃える
