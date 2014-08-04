@@ -273,9 +273,9 @@ def build_argparser():
     parser = argparse.ArgumentParser(description='Generate HTML document from MIB(SMIv2) definition')
 
     parser.add_argument('mibxml', help='MIB file or XML file(converted by smidump)')
-    parser.add_argument('-k', dest="forceMibParse", help='Continue conversion forcely even when MIB error is detected (smidump option)', action='store_true')
+    parser.add_argument('-k', dest="forceMibParse", help='continue conversion forcely even when MIB error is detected (smidump option)', action='store_true')
     parser.add_argument('-r', dest="fromTop", help='set top oid as oid abbreviation root. Default root is identity oid', action='store_true' );
-    parser.add_argument('-D', dest="templateException", help='Change behavior for undefined object in tempates (For template debugging only)', choices=['normal', 'debug', 'strict' ])
+    parser.add_argument('-D', dest="templateException", help='change behavior for undefined object in templates (For template debugging only)', choices=['normal', 'debug', 'strict' ])
     parser.add_argument('-s', metavar="root_level_offset", dest="rootShiftLevel", help='offset of root oid level (default: 0)', type=_positiveInt, default=0 );
     return parser
 
