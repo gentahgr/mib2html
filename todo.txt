@@ -26,6 +26,7 @@ Legend
 * ライセンスの追加
 * root_node レベルの選択オプション
   * -r 最も浅いところをベースにする (option無しの時はidentity oid)
+  * -s rootのoffsetを調整できる
 - IEのStandard Modeでツリーの縦線がつながらない．
 - canvasを使用したツリー表示 (git/hgのバージョン表示のように)
 - webからonlineで使える簡易インタフェース (cgi?, wsgi?)
