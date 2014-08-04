@@ -230,8 +230,14 @@ def prepare_context(mib, opts):
     identity_oid  = mib_index[identity_name][0]
 
     root_oid  = ".".join( [str(i) for i in mib_array[0][0] ]) if opts.fromTop else identity_oid
-    root_oidlist = root_oid.split(u".")[:-1]
-    root_oid_prefix = u".".join(root_oidlist) + "."
+    root_oidlist = root_oid.split(u".")
+    
+    # adjust root level
+    if opts.rootShiftLevel > 0:
+        root_oidlist = root_oidlist[:-opts.rootShiftLevel]
+
+    root_oid = u".".join(root_oidlist)
+    root_oid_prefix = u".".join(root_oidlist[:-1]) + u"."
 
     oid_prefix_level, ttree = build_tree_index(mib, root_oid)
 
@@ -256,13 +262,21 @@ def build_argparser():
     """
     import argparse
 
+    def _positiveInt(s):
+        """Accept positive interger values only"""
+
+        v = int(s)
+        if v < 0:
+            raise argparse.ArgumentTypeError( "{} is not a positive integer.".format(s))
+        return v
+
     parser = argparse.ArgumentParser(description='Generate HTML document from MIB(SMIv2) definition')
 
     parser.add_argument('mibxml', help='MIB file or XML file(converted by smidump)')
     parser.add_argument('-k', dest="forceMibParse", help='Continue conversion forcely even when MIB error is detected (smidump option)', action='store_true')
     parser.add_argument('-r', dest="fromTop", help='set top oid as oid abbreviation root. Default root is identity oid', action='store_true' );
     parser.add_argument('-D', dest="templateException", help='Change behavior for undefined object in tempates (For template debugging only)', choices=['normal', 'debug', 'strict' ])
-    # parser.add_argument('-s', metavar="levelshift", help='offset of root oid level (positive or negative) (default: 0)', type=int, default=0  );
+    parser.add_argument('-s', metavar="root_level_offset", dest="rootShiftLevel", help='offset of root oid level (default: 0)', type=_positiveInt, default=0 );
     return parser
 
 def prepare_filters():
