@@ -1,0 +1,15 @@
+{#
+  Macro for table column drawing
+
+  DEFVAL column
+#}
+
+{% macro draw_header() -%}
+<th>default</th>
+{%- endmacro %}
+
+{% macro draw_column(n,args) -%}
+{%- set defval = n.find("default") %}
+{%- set defaulttext = defval.text if defval is not none else "" %}
+<td class="t_snt">{{ defaulttext }}</td>
+{%- endmacro %}

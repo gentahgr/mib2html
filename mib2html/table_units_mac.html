@@ -1,0 +1,15 @@
+{#
+  Macro for table column drawing
+
+  UNITS column
+#}
+
+{% macro draw_header() -%}
+<th>Units</th>
+{%- endmacro %}
+
+{% macro draw_column(n,args) -%}
+{%- set units = n.find("units") %}
+{%- set unitstext = units.text if units is not none else "" %}
+<td class="t_snt">{{ unitstext }}</td>
+{%- endmacro %}
