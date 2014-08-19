@@ -49,7 +49,9 @@ Generated HTML file is printed in its standard output. It can be redirected to a
 
 ### options
 
+* `-k` continue to generate output even if given MIB contain errors
 * `-r` use first node as base oid instead of identification oid.
+* `-s level_offset` adjust oid abbreviation level
 
 ### environment variable
 
@@ -57,4 +59,6 @@ Generated HTML file is printed in its standard output. It can be redirected to a
 When `mib2xml` is defined, mib2html calls it with `-f xml` option.
 `smidump` in `PATH` is used by default when this variable is not defined.
 
-
+```
+bash$ export mib2html=/path/to/smidump
+```
