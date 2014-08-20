@@ -60,5 +60,5 @@ When `mib2xml` is defined, mib2html calls it with `-f xml` option.
 `smidump` in `PATH` is used by default when this variable is not defined.
 
 ```
-bash$ export mib2html=/path/to/smidump
+bash$ export mib2xml=/path/to/smidump
 ```
